@@ -150,6 +150,21 @@ nav button svg{overflow:visible}
 .bell.new #bb{animation:pls 1.4s ease-in-out infinite}
 @keyframes pls{50%{transform:scale(1.2)}}
 @media (prefers-reduced-motion:reduce){.bell svg,.bell.new #bb{animation:none}}
+
+.sw{position:relative}.sw .search{margin-bottom:10px}
+.sg{position:absolute;left:0;right:0;top:calc(100% - 6px);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.2);z-index:6;overflow:hidden}
+.sgi{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 14px;font:inherit;color:var(--ink);cursor:pointer}.sgi:last-child{border-bottom:0}.sgi small{color:var(--mute)}
+.rc .chip[aria-pressed="true"]{background:var(--green2);border-color:var(--green2)}
+.tag.hot{background:var(--warnbg);color:var(--warn)}
+.aa{display:flex;gap:6px;flex-wrap:wrap}.del.ed{border-color:var(--green2);color:var(--green)}
+.acts .ed2{background:#2b6f8a;box-shadow:0 3px 0 #1a4a60}
+.dsh{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:var(--sh)}
+.dsh h3{margin:0 0 6px}.dsh p{margin:4px 0}.dsh ol{margin:4px 0 10px;padding-left:22px}.mut{color:var(--mute)}
+#ed[hidden]{display:none}
+#ed{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:20;padding:16px;overflow:auto}
+.ebox{text-align:left;max-height:92vh;overflow:auto;width:min(420px,100%)}
+#crop{z-index:30}
+#eok{background:var(--green2);color:#fff}#eno{background:var(--line);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -171,7 +186,8 @@ nav button svg{overflow:visible}
 
 <main>
 <section id="people" class="on">
-  <input class="search" id="q" type="search" placeholder="নাম বা পেশা দিয়ে খুঁজুন" aria-label="খুঁজুন">
+  <div class="sw"><input class="search" id="q" type="search" placeholder="নাম, পেশা বা নম্বর লিখুন (বাংলা বা English)" autocomplete="off" aria-label="খুঁজুন"><div id="sg" class="sg" hidden></div></div>
+  <div id="rchips" class="chips rc"></div>
   <div id="plist" class="grid"></div>
 </section>
 
@@ -186,6 +202,7 @@ nav button svg{overflow:visible}
 
 <section id="blood">
   <h2>স্মার্ট ব্লাড ব্যাংক</h2>
+  <input class="search" id="bq" type="search" placeholder="দাতার নাম বা নম্বর খুঁজুন" autocomplete="off" aria-label="দাতা খুঁজুন">
   <div class="chips" id="chips" role="group" aria-label="রক্তের গ্রুপ"></div>
   <div id="blist" class="grid"></div>
 </section>
@@ -204,7 +221,7 @@ nav button svg{overflow:visible}
     <button class="send" type="submit">জমা দিন</button>
   </form>
 </section>
-<section id="adm"><h2>অনুমোদনের অপেক্ষায়</h2><div id="alist" class="grid"></div></section>
+<section id="adm"><div id="dash"></div><h2>অনুমোদনের অপেক্ষায়</h2><div id="alist" class="grid"></div></section>
 <section id="login"><h2>অ্যাডমিন লগইন</h2>
   <form id="lf"><label>ইমেইল<input id="lem" type="email" required autocomplete="username"></label><label>পাসওয়ার্ড<input id="lpw" type="password" required autocomplete="current-password"></label><div id="lmsg" class="hint bad" role="alert"></div><button class="send" type="submit">লগইন</button></form>
   <button class="send" id="lout" type="button" hidden>লগ আউট</button></section>
@@ -219,11 +236,12 @@ nav button svg{overflow:visible}
   <button role="tab" data-t="adm" id="admtab" hidden aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>অনুমোদন<span id="abadge"></span></button>
 </nav>
 
+<div id="ed" hidden><div class="cbox ebox"><p id="et">তথ্য সম্পাদনা</p><form id="ef" novalidate><div id="ef-fields"></div><div id="emsg" class="hint bad" role="alert"></div><div class="cbtn"><button type="submit" id="eok">সংরক্ষণ</button><button type="button" id="eno">বাতিল</button></div></form></div></div>
 <div id="crop" hidden><div class="cbox"><p>ছবি সরিয়ে ও জুম করে ঠিক করুন</p><canvas id="cc" width="260" height="260"></canvas><input type="range" id="cz" min="1" max="3" step="0.01" value="1" aria-label="জুম"><div class="cbtn"><button type="button" id="cok">ঠিক আছে</button><button type="button" id="cno">বাতিল</button></div></div></div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getFirestore,collection,doc,addDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getFirestore,collection,doc,addDoc,deleteDoc,onSnapshot,setDoc,updateDoc,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 const firebaseConfig={
   apiKey:"AIzaSyDxjJ6GauVfCXEc5ufG_jWIeYVUOje_-Cg",
@@ -236,33 +254,66 @@ const bn=s=>String(s).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
 const en=s=>String(s).replace(/[০-৯]/g,d=>"০১২৩৪৫৬৭৮৯".indexOf(d)).replace(/[\s-]/g,"");
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const $=id=>document.getElementById(id);
+const BM={"ক":"k","খ":"k","গ":"g","ঘ":"g","ঙ":"ng","চ":"c","ছ":"c","জ":"j","ঝ":"j","ঞ":"n","ট":"t","ঠ":"t","ড":"d","ঢ":"d","ণ":"n","ত":"t","থ":"t","দ":"d","ধ":"d","ন":"n","প":"p","ফ":"p","ব":"b","ভ":"b","ম":"m","য":"j","র":"r","ল":"l","শ":"s","ষ":"s","স":"s","হ":"","ৎ":"t","ং":"ng","ঃ":"","ঁ":""};
+function skel(s){
+  s=String(s||"").toLowerCase().replace(/[\u09E6-\u09EF]/g,d=>"০১২৩৪৫৬৭৮৯".indexOf(d));
+  s=s.replace(/\u09DF|\u09AF\u09BC/g,"").replace(/[\u09DC\u09DD]|\u09A1\u09BC|\u09A2\u09BC/g,"r");
+  s=s.replace(/[\u0995-\u09B9\u09CE\u0982\u0983\u0981]/g,c=>BM[c]!==undefined?BM[c]:"").replace(/[\u0980-\u09FF]/g,"");
+  s=s.replace(/ph/g,"p").replace(/f/g,"p").replace(/v/g,"b").replace(/z/g,"j").replace(/q/g,"k").replace(/x/g,"ks").replace(/ck/g,"k");
+  return s.replace(/[aeiouyhw\W_]/g,"").replace(/(.)\1+/g,"$1");
+}
+function mScore(q,text){
+  q=String(q||"").trim().toLowerCase();if(!q)return 1;
+  const t=String(text||"").toLowerCase();
+  if(t.includes(q))return(t.startsWith(q)||t.includes(" "+q))?4:3;
+  const dq=en(q);if(/^\d{3,}$/.test(dq)&&en(text||"").includes(dq))return 3;
+  const sq=skel(q);if(!sq)return 0;
+  const st=skel(text),ws=String(text||"").split(/\s+/).map(skel).filter(Boolean);
+  if(st.startsWith(sq)||ws.some(w=>w.startsWith(sq)))return 2.5;
+  return(sq.length>=3&&st.includes(sq))?2:0;
+}
+
 const PH='<svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg>';
 const PHs='<svg class="pi" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg>';
 const COLORS=["#1f5a3a","#2b6f8a","#8a5a2b","#6a3d8a","#a2433a","#3b7a57","#9a7b1e"];
 const color=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
 const avatar=p=>`<div class="av" style="background:${color(p.name)}">${p.photo?`<img src="${esc(p.photo)}" alt="">`:esc([...p.name.replace(/^(মোঃ|ডাঃ|মো\.)\s*/,"")][0]||"?")}</div>`;
-const callBtn=(ph,cls="")=>`<a class="call ${cls}" href="tel:${esc(ph)}" aria-label="কল করুন">${PH}কল</a>`;
+const callBtn=(ph,cls="",k="")=>`<a class="call ${cls}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন">${PH}কল</a>`;
+const hot=k=>(HITS[k]||0)>=5?'<span class="tag hot">🔥 জনপ্রিয়</span>':"";
+
 const KINDS={person:{col:"live_people",label:"গ্রামের মানুষ"},donor:{col:"live_donors",label:"রক্তদাতা"},emergency:{col:"live_emergency",label:"জরুরি নম্বর"},notice:{col:"live_notices",label:"নোটিশ"}};
 const BASE_EMG=[];
 const DATA={person:[],donor:[],emergency:[],notice:[]};
-let photoData="",onlyOk=false,PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
+let photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
 const login=()=>"";
-const delBtn=(k,id)=>isAdmin?`<button class="del" data-del="${k}|${id}">মুছুন</button>`:"";
+const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
 
+function rankPeople(q){
+  return DATA.person.filter(p=>!roleF||p.role===roleF).map(p=>({p,s:mScore(q,(p.name||"")+" "+(p.role||"")+" "+(p.phone||""))})).filter(x=>x.s>0)
+   .sort((a,b)=>b.s-a.s||(HITS["person_"+b.p.id]||0)-(HITS["person_"+a.p.id]||0)||String(a.p.name).localeCompare(String(b.p.name),"bn")).map(x=>x.p);
+}
 function renderPeople(){
-  const t=$("q").value.trim().toLowerCase();
-  const l=DATA.person.filter(p=>((p.name||"")+" "+(p.role||"")).toLowerCase().includes(t));
-  $("plist").innerHTML=login()+(l.length?l.map(p=>`<div class="row">${avatar(p)}<div class="info"><b>${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}<span class="pn">${PHs}${bn(p.phone)}</span>${delBtn("person",p.id)}</div>${callBtn(p.phone)}</div>`).join(""):(db?'<div class="empty">এখনো কেউ নেই। "যোগ" ট্যাব থেকে আপনার তথ্য পাঠান।</div>':""));
+  const l=rankPeople($("q").value);
+  const roles=[...DATA.person.reduce((m,p)=>p.role?m.set(p.role,(m.get(p.role)||0)+1):m,new Map())].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
+  $("rchips").innerHTML=roles.length?`<button class="chip" aria-pressed="${!roleF}" data-r="">সব</button>`+roles.map(r=>`<button class="chip" aria-pressed="${roleF===r}" data-r="${esc(r)}">${esc(r)}</button>`).join(""):"";
+  $("plist").innerHTML=l.length?l.map(p=>`<div class="row">${avatar(p)}<div class="info"><b>${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}<span class="pn">${PHs}${bn(p.phone)}</span>${hot("person_"+p.id)}${delBtn("person",p.id)}</div>${callBtn(p.phone,"","person_"+p.id)}</div>`).join(""):(db?'<div class="empty">কাউকে পাওয়া যায়নি। অন্য নাম লিখে দেখুন।</div>':"");
+}
+function renderSug(){
+  const q=$("q").value.trim(),box=$("sg");
+  if(!q){box.hidden=true;return;}
+  const l=rankPeople(q).slice(0,5);
+  box.innerHTML=l.map(p=>`<button type="button" class="sgi" data-sg="${esc(p.id)}"><b>${esc(p.name)}</b><small>${esc(p.role||"")}</small></button>`).join("");
+  box.hidden=!l.length;
 }
 function renderEmg(){
-  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...DATA.emergency].map(e=>`<div class="row"><div class="info"><b>${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${bn(e.phone)}</span>${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"red")}</div>`).join("");
+  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row"><div class="info"><b>${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${bn(e.phone)}</span>${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"red",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
 }
 function renderBlood(){
   const G=["সব","A+","A-","B+","B-","O+","O-","AB+","AB-"];
   $("chips").innerHTML=`<button class="chip ok" aria-pressed="${onlyOk}" data-ok="1">✓ এখন দিতে পারবেন</button>`+G.map(g=>`<button class="chip" aria-pressed="${g===grp}" data-g="${g}">${g}</button>`).join("");
   const ds=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
-  const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90));
-  $("blist").innerHTML=login()+(l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row"><div class="bg">${esc(d.group)}</div><div class="info"><b>${esc(d.name)}</b><span class="pn">${PHs}${bn(d.phone)}</span>${d.last?`<span>শেষ রক্তদান: ${bn(d.ds)} দিন আগে</span>`:""}<span class="tag ${ok?"ok":"wait"}">${ok?"এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${delBtn("donor",d.id)}</div>${callBtn(d.phone,"red")}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
+  const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+" "+(d.phone||""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
+  $("blist").innerHTML=login()+(l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row"><div class="bg">${esc(d.group)}</div><div class="info"><b>${esc(d.name)}</b><span class="pn">${PHs}${bn(d.phone)}</span>${d.last?`<span>শেষ রক্তদান: ${bn(d.ds)} দিন আগে</span>`:""}<span class="tag ${ok?"ok":"wait"}">${ok?"এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${hot("donor_"+d.id)}${delBtn("donor",d.id)}</div>${callBtn(d.phone,"red","donor_"+d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
 }
 const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
 const dt=s=>{const d=new Date(s);return isNaN(d)?"":bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear())};
@@ -272,10 +323,10 @@ function renderNotices(){
 }
 const summary=p=>{const d=p.data;return p.kind==="notice"?d.title:d.name+" · "+(d.group||d.role||d.note||"")+" · "+bn(d.phone||"")};
 function renderPending(){
-  $("abadge").textContent=PENDING.length?bn(PENDING.length):"";
-  $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row"><div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
+  $("abadge").textContent=PENDING.length?bn(PENDING.length):"";renderDash();
+  $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row">${p.data&&p.data.photo?avatar(p.data):""}<div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ed2" data-ed="pending|${p.kind}|${p.id}">সম্পাদনা</button><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
 }
-const renderAll=()=>{renderTicker();updateBell();renderPeople();renderEmg();renderBlood();renderNotices();$("s1").textContent=bn(DATA.person.length);$("s2").textContent=bn(DATA.donor.length);$("s3").textContent=bn(DATA.notice.length)};
+const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderEmg();renderBlood();renderNotices();$("s1").textContent=bn(DATA.person.length);$("s2").textContent=bn(DATA.donor.length);$("s3").textContent=bn(DATA.notice.length)};
 
 const FIELDS={
  person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
@@ -303,8 +354,16 @@ $("form").addEventListener("submit",async e=>{
   }catch(err){msg("পাঠানো যায়নি। আপনার লিখতে পারার অনুমতি নেই বা নেটওয়ার্ক সমস্যা।",1);}
 });
 document.addEventListener("click",async e=>{
+  const a=e.target.closest("a.call");if(a&&a.dataset.hit&&db)trackHit(a.dataset.hit);
+  if(!e.target.closest(".sw"))$("sg").hidden=true;
   const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.ok){onlyOk=!onlyOk;renderBlood();}
+  if(b.dataset.ed){const[s,k,i]=b.dataset.ed.split("|");openEdit(s,k,i);}
+  else if(b.dataset.gave){try{await db.collection("live_donors").doc(b.dataset.gave).update({last:new Date().toISOString().slice(0,10)});}catch(x){}}
+  else if(b.dataset.sg){const p=DATA.person.find(x=>x.id===b.dataset.sg);if(p){$("q").value=p.name;$("sg").hidden=true;renderPeople();trackHit("person_"+p.id);}}
+  else if(b.dataset.r!==undefined){roleF=b.dataset.r;renderPeople();renderSug();}
+  else if(b.dataset.bk){backup();}
+  else if(b.id==="erm"){editPhoto="";$("epv").innerHTML="";}
+  else if(b.dataset.ok){onlyOk=!onlyOk;renderBlood();}
   else if(b.dataset.g){grp=b.dataset.g;renderBlood();}
   else if(b.dataset.del){
     if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="আবার চাপুন, মুছে যাবে";return;}
@@ -314,15 +373,17 @@ document.addEventListener("click",async e=>{
     try{await db.collection(KINDS[p.kind].col).add(p.data);await db.collection("pending").doc(p.id).delete();}catch(x){}
   }else if(b.dataset.rj){try{await db.collection("pending").doc(b.dataset.rj).delete();}catch(x){}}
 });
-$("q").addEventListener("input",renderPeople);
+$("q").addEventListener("input",()=>{renderPeople();renderSug();});
+$("bq").addEventListener("input",renderBlood);
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.t)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.go)));
 showFields();renderAll();
 let unsubP=null;
 try{
   const app=initializeApp(firebaseConfig),fs=getFirestore(app),auth=getAuth(app);
-  db={collection:n=>({onSnapshot:(f,e)=>onSnapshot(collection(fs,n),f,e),add:d=>addDoc(collection(fs,n),d),doc:id=>({delete:()=>deleteDoc(doc(fs,n,id))})})};
+  db={hit:id=>setDoc(doc(fs,"hits",id),{n:increment(1)},{merge:true}),collection:n=>({onSnapshot:(f,e)=>onSnapshot(collection(fs,n),f,e),add:d=>addDoc(collection(fs,n),d),doc:id=>({delete:()=>deleteDoc(doc(fs,n,id)),update:d=>updateDoc(doc(fs,n,id),d),set:d=>setDoc(doc(fs,n,id),d)})})};
   Object.entries(KINDS).forEach(([k,v])=>db.collection(v.col).onSnapshot(s=>{DATA[k]=s.docs.map(x=>({id:x.id,...x.data()}));renderAll();},()=>{}));
+  db.collection("hits").onSnapshot(s=>{HITS={};s.docs.forEach(x=>{HITS[x.id]=x.data().n||0});renderAll();renderSug();},()=>{});
   onAuthStateChanged(auth,u=>{
     isAdmin=!!u;$("admtab").hidden=!u;$("lout").hidden=!u;$("lf").hidden=!!u;
     if(unsubP){unsubP();unsubP=null;} PENDING=[];
@@ -371,14 +432,58 @@ function cdraw(){const x=$("cc").getContext("2d");x.clearRect(0,0,CV,CV);x.drawI
 function cclamp(){cx0=Math.min(0,Math.max(CV-CI.width*cs,cx0));cy0=Math.min(0,Math.max(CV-CI.height*cs,cy0));}
 function copen(f){const i=new Image();i.onload=()=>{CI=i;cs0=CV/Math.min(i.width,i.height);cs=cs0;$("cz").value=1;cx0=(CV-i.width*cs)/2;cy0=(CV-i.height*cs)/2;$("crop").hidden=false;cdraw();};i.src=URL.createObjectURL(f);}
 function showPv(){const v=$("pv");if(v)v.innerHTML=photoData?`<img src="${photoData}" alt="">`:"";}
-document.addEventListener("change",e=>{if(e.target.id==="photo"&&e.target.files[0])copen(e.target.files[0]);});
+document.addEventListener("change",e=>{if((e.target.id==="photo"||e.target.id==="ephoto")&&e.target.files[0]){cropFor=e.target.id;copen(e.target.files[0]);}});
 $("cz").addEventListener("input",e=>{const mx=(CV/2-cx0)/cs,my=(CV/2-cy0)/cs;cs=cs0*(+e.target.value);cx0=CV/2-mx*cs;cy0=CV/2-my*cs;cclamp();cdraw();});
 const cc=$("cc");
 cc.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,ox:cx0,oy:cy0};cc.setPointerCapture(e.pointerId);});
 cc.addEventListener("pointermove",e=>{if(!drag)return;const k=CV/cc.getBoundingClientRect().width;cx0=drag.ox+(e.clientX-drag.x)*k;cy0=drag.oy+(e.clientY-drag.y)*k;cclamp();cdraw();});
 ["pointerup","pointercancel"].forEach(t=>cc.addEventListener(t,()=>{drag=null}));
-$("cok").addEventListener("click",()=>{const o=document.createElement("canvas");o.width=o.height=200;const k=200/CV;o.getContext("2d").drawImage(CI,cx0*k,cy0*k,CI.width*cs*k,CI.height*cs*k);photoData=o.toDataURL("image/jpeg",.8);$("crop").hidden=true;showPv();});
-$("cno").addEventListener("click",()=>{$("crop").hidden=true;const p=$("photo");if(p)p.value="";});
+$("cok").addEventListener("click",()=>{const o=document.createElement("canvas");o.width=o.height=200;const k=200/CV;o.getContext("2d").drawImage(CI,cx0*k,cy0*k,CI.width*cs*k,CI.height*cs*k);const u=o.toDataURL("image/jpeg",.8);if(cropFor==="ephoto"){editPhoto=u;$("epv").innerHTML=`<img src="${u}" alt=""><button type="button" class="del" id="erm">ছবি মুছুন</button>`;}else{photoData=u;showPv();}$("crop").hidden=true;});
+$("cno").addEventListener("click",()=>{$("crop").hidden=true;const p=$(cropFor);if(p)p.value="";});
+function trackHit(k){try{const key="mi_h_"+k+"_"+new Date().toISOString().slice(0,10);if(localStorage.getItem(key))return;localStorage.setItem(key,"1");}catch(e){}if(db)db.hit(k).catch(()=>{});}
+function openEdit(src,k,id){
+  const it=src==="pending"?(PENDING.find(x=>x.id===id)||{}).data:DATA[k].find(x=>x.id===id);
+  if(!it)return;
+  EDIT={src,k,id};editPhoto=undefined;
+  $("et").textContent=KINDS[k].label+" সম্পাদনা";
+  $("ef-fields").innerHTML=FIELDS[k].replace('id="photo"','id="ephoto"').replace('id="pv"','id="epv"');
+  $("ef-fields").querySelectorAll("[name]").forEach(el=>{const v=it[el.name];if(el.type==="checkbox")el.checked=!!v;else if(v!==undefined)el.value=v;});
+  const pv=$("epv");if(pv)pv.innerHTML=it.photo?`<img src="${esc(it.photo)}" alt=""><button type="button" class="del" id="erm">ছবি মুছুন</button>`:"";
+  $("emsg").textContent="";$("ed").hidden=false;
+}
+$("ef").addEventListener("submit",async e=>{
+  e.preventDefault();if(!EDIT)return;
+  const{src,k,id}=EDIT,d={},m=$("emsg");
+  $("ef-fields").querySelectorAll("[name]").forEach(el=>d[el.name]=el.type==="checkbox"?el.checked:el.value.trim());
+  if(d.phone!==undefined){d.phone=en(d.phone);if(!/^(01\d{9}|\d{3,6})$/.test(d.phone)){m.textContent="ফোন নম্বর সঠিক নয়।";return;}}
+  if(!(d.name||d.title)||(k==="notice"&&!d.body)){m.textContent="* চিহ্নিত ঘরগুলো পূরণ করুন।";return;}
+  const old=src==="pending"?(PENDING.find(x=>x.id===id)||{}).data:DATA[k].find(x=>x.id===id);
+  if(editPhoto!==undefined)d.photo=editPhoto;else if(old&&old.photo)d.photo=old.photo;
+  if(k==="notice"&&old&&old.date)d.date=old.date;
+  try{
+    if(src==="pending")await db.collection("pending").doc(id).update({data:d});
+    else await db.collection(KINDS[k].col).doc(id).set(d);
+    $("ed").hidden=true;
+  }catch(x){m.textContent="সংরক্ষণ করা যায়নি।";}
+});
+$("eno").addEventListener("click",()=>{$("ed").hidden=true;});
+function renderDash(){
+  const el=$("dash");if(!el)return;
+  if(!isAdmin){el.innerHTML="";return;}
+  const nm={};["person","donor","emergency"].forEach(k=>DATA[k].forEach(x=>{nm[k+"_"+x.id]=x.name}));
+  const top=Object.entries(HITS).filter(([k])=>nm[k]).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const total=Object.values(HITS).reduce((a,b)=>a+b,0);
+  el.innerHTML=`<div class="dsh"><h3>ড্যাশবোর্ড</h3><p>মোট কল/ক্লিক: <b>${bn(total)}</b> · অপেক্ষায়: <b>${bn(PENDING.length)}</b></p>${top.length?`<p class="mut">সবচেয়ে বেশি খোঁজা:</p><ol>${top.map(([k,n])=>`<li>${esc(nm[k])} <small>${bn(n)} বার</small></li>`).join("")}</ol>`:'<p class="mut">এখনো কোনো কল হয়নি।</p>'}<button class="del ed" data-bk="1">ব্যাকআপ ডাউনলোড (CSV)</button></div>`;
+}
+function backup(){
+  const rows=[["ধরন","নাম/শিরোনাম","পেশা/গ্রুপ/বিবরণ","ফোন","শেষ রক্তদান/তারিখ"]];
+  DATA.person.forEach(x=>rows.push(["মানুষ",x.name,x.role||"",x.phone,""]));
+  DATA.donor.forEach(x=>rows.push(["রক্তদাতা",x.name,x.group,x.phone,x.last||""]));
+  DATA.emergency.forEach(x=>rows.push(["জরুরি",x.name,x.note||"",x.phone,""]));
+  DATA.notice.forEach(x=>rows.push(["নোটিশ",x.title,x.body,"",x.date||""]));
+  const csv="\uFEFF"+rows.map(r=>r.map(c=>'"'+String(c==null?"":c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="mullapara-backup-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();
+}
 renderDate();loadWx();
 </script>
 
