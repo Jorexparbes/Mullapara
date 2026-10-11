@@ -165,6 +165,17 @@ nav button svg{overflow:visible}
 .ebox{text-align:left;max-height:92vh;overflow:auto;width:min(420px,100%)}
 #crop{z-index:30}
 #eok{background:var(--green2);color:#fff}#eno{background:var(--line);color:var(--ink)}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--line);padding:5px;border-radius:14px;margin-bottom:12px}
+.seg button{border:0;background:transparent;color:var(--mute);font:inherit;font-weight:700;font-size:.92rem;padding:10px 6px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--green);box-shadow:var(--sh)}
+.pr{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 12px;font-size:.82rem;color:var(--mute);text-align:center}.pr b{color:var(--green)}.pr[hidden]{display:none}
+.topd{grid-column:1/-1;background:var(--okbg);border-radius:14px;padding:10px 14px;font-size:.88rem}.topd b{display:block;color:var(--ok);margin-bottom:2px}.topd span{display:inline-block;margin-right:12px}
+.tag.don{background:var(--redbg);color:var(--red)}
+.av.ei{background:var(--redbg);font-size:1.6rem}
+.av img{cursor:zoom-in}
+#zv{position:fixed;inset:0;background:rgba(0,0,0,.82);display:grid;place-items:center;z-index:40;padding:20px}#zv[hidden]{display:none}#zv img{max-width:100%;max-height:80vh;border-radius:20px}
+.tag.out{background:var(--soft);color:var(--green)}
 </style>
 </head>
 <body>
@@ -198,6 +209,9 @@ nav button svg{overflow:visible}
     <a class="alt" href="tel:16263"><strong>১৬২৬৩</strong><small>স্বাস্থ্য বাতায়ন</small></a>
   </div>
   <div id="elist" class="grid"></div>
+  <h2 style="margin-top:26px">🌐 এলাকার বাইরের গুরুত্বপূর্ণ ব্যক্তি</h2>
+  <p class="mut" style="margin:-6px 0 12px;font-size:.92rem">ডাক্তার, অফিসার ও দরকারি মানুষ। ফোনবুকে নাম লিখে খুঁজলেও এঁদের পাবেন।</p>
+  <div id="olist" class="grid"></div>
 </section>
 
 <section id="blood">
@@ -215,7 +229,7 @@ nav button svg{overflow:visible}
   <h2>তথ্য পাঠান</h2>
   <p style="color:var(--mute);margin-top:0">আপনার তথ্য পাঠান। অনুমোদনের পর সবাই দেখতে পাবে।</p>
   <form id="form" novalidate>
-    <label>কী পাঠাবেন?<select id="kind"><option value="person">গ্রামের মানুষ (ফোনবুক)</option><option value="donor">রক্তদাতা</option><option value="emergency">জরুরি নম্বর</option><option value="notice">নোটিশ</option></select></label>
+    <label>কী পাঠাবেন?<select id="kind"><option value="person">গ্রামের মানুষ / বাইরের গুরুত্বপূর্ণ ব্যক্তি</option><option value="donor">রক্তদাতা</option><option value="emergency">জরুরি নম্বর</option><option value="notice">নোটিশ</option></select></label>
     <div id="fields"></div>
     <div id="msg" class="hint" role="status"></div>
     <button class="send" type="submit">জমা দিন</button>
@@ -236,6 +250,7 @@ nav button svg{overflow:visible}
   <button role="tab" data-t="adm" id="admtab" hidden aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>অনুমোদন<span id="abadge"></span></button>
 </nav>
 
+<div id="zv" hidden><img id="zi" alt=""></div>
 <div id="ed" hidden><div class="cbox ebox"><p id="et">তথ্য সম্পাদনা</p><form id="ef" novalidate><div id="ef-fields"></div><div id="emsg" class="hint bad" role="alert"></div><div class="cbtn"><button type="submit" id="eok">সংরক্ষণ</button><button type="button" id="eno">বাতিল</button></div></form></div></div>
 <div id="crop" hidden><div class="cbox"><p>ছবি সরিয়ে ও জুম করে ঠিক করুন</p><canvas id="cc" width="260" height="260"></canvas><input type="range" id="cz" min="1" max="3" step="0.01" value="1" aria-label="জুম"><div class="cbtn"><button type="button" id="cok">ঠিক আছে</button><button type="button" id="cno">বাতিল</button></div></div></div>
 
@@ -277,26 +292,35 @@ const PH='<svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a
 const PHs='<svg class="pi" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.25 11.4 11.4 0 003.6.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.6a1 1 0 01-.25 1z"/></svg>';
 const COLORS=["#1f5a3a","#2b6f8a","#8a5a2b","#6a3d8a","#a2433a","#3b7a57","#9a7b1e"];
 const color=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
-const avatar=p=>`<div class="av" style="background:${color(p.name)}">${p.photo?`<img src="${esc(p.photo)}" alt="">`:esc([...p.name.replace(/^(মোঃ|ডাঃ|মো\.)\s*/,"")][0]||"?")}</div>`;
+const avatar=p=>`<div class="av" style="background:${color(p.name)}">${p.photo?`<img src="${esc(p.photo)}" data-zoom="1" alt="">`:esc([...p.name.replace(/^(মোঃ|ডাঃ|মো\.)\s*/,"")][0]||"?")}</div>`;
 const callBtn=(ph,cls="",k="")=>`<a class="call ${cls}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন">${PH}কল</a>`;
+const inScope=p=>scope==="out"?!!p.outside:!p.outside;
+const lvl=t=>t>=10?" · 🥇 মহান দাতা":t>=5?" · 🥈 রক্তবীর":t>=3?" · 🥉 নিয়মিত":"";
+const timesTag=d=>{const t=+d.times||0;return t?`<span class="tag don">🩸 ${bn(t)} বার রক্ত দিয়েছেন${lvl(t)}</span>`:""};
 const hot=k=>(HITS[k]||0)>=5?'<span class="tag hot">🔥 জনপ্রিয়</span>':"";
 
 const KINDS={person:{col:"live_people",label:"গ্রামের মানুষ"},donor:{col:"live_donors",label:"রক্তদাতা"},emergency:{col:"live_emergency",label:"জরুরি নম্বর"},notice:{col:"live_notices",label:"নোটিশ"}};
 const BASE_EMG=[];
 const DATA={person:[],donor:[],emergency:[],notice:[]};
-let photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
+let scope="local",photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
 const login=()=>"";
 const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
 
 function rankPeople(q){
-  return DATA.person.filter(p=>!roleF||p.role===roleF).map(p=>({p,s:mScore(q,(p.name||"")+" "+(p.role||"")+" "+(p.phone||""))})).filter(x=>x.s>0)
+  const has=String(q||"").trim().length>0;
+  return DATA.person.filter(p=>has||!p.outside).filter(p=>!roleF||p.role===roleF).map(p=>({p,s:mScore(q,(p.name||"")+" "+(p.role||"")+" "+(p.area||"")+" "+(p.phone||""))})).filter(x=>x.s>0)
    .sort((a,b)=>b.s-a.s||(HITS["person_"+b.p.id]||0)-(HITS["person_"+a.p.id]||0)||String(a.p.name).localeCompare(String(b.p.name),"bn")).map(x=>x.p);
 }
+const personRow=(p,tag=true)=>`<div class="row">${avatar(p)}<div class="info"><b>${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}${p.area?`<span>📍 ${esc(p.area)}</span>`:""}<span class="pn">${PHs}${bn(p.phone)}</span>${p.outside&&tag?'<span class="tag out">🌐 এলাকার বাইরের</span>':""}${hot("person_"+p.id)}${delBtn("person",p.id)}</div>${callBtn(p.phone,"","person_"+p.id)}</div>`;
 function renderPeople(){
   const l=rankPeople($("q").value);
-  const roles=[...DATA.person.reduce((m,p)=>p.role?m.set(p.role,(m.get(p.role)||0)+1):m,new Map())].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
+  const roles=[...DATA.person.filter(p=>!p.outside).reduce((m,p)=>p.role?m.set(p.role,(m.get(p.role)||0)+1):m,new Map())].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
   $("rchips").innerHTML=roles.length?`<button class="chip" aria-pressed="${!roleF}" data-r="">সব</button>`+roles.map(r=>`<button class="chip" aria-pressed="${roleF===r}" data-r="${esc(r)}">${esc(r)}</button>`).join(""):"";
-  $("plist").innerHTML=l.length?l.map(p=>`<div class="row">${avatar(p)}<div class="info"><b>${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}<span class="pn">${PHs}${bn(p.phone)}</span>${hot("person_"+p.id)}${delBtn("person",p.id)}</div>${callBtn(p.phone,"","person_"+p.id)}</div>`).join(""):(db?'<div class="empty">কাউকে পাওয়া যায়নি। অন্য নাম লিখে দেখুন।</div>':"");
+  $("plist").innerHTML=l.length?l.map(p=>personRow(p)).join(""):(db?'<div class="empty">কাউকে পাওয়া যায়নি। অন্য নাম লিখে দেখুন।</div>':"");
+}
+function renderOut(){
+  const l=DATA.person.filter(p=>p.outside).sort((a,b)=>(HITS["person_"+b.id]||0)-(HITS["person_"+a.id]||0)||String(a.name).localeCompare(String(b.name),"bn"));
+  $("olist").innerHTML=l.length?l.map(p=>personRow(p,false)).join(""):(db?'<div class="empty">বাইরের গুরুত্বপূর্ণ ব্যক্তির তথ্য শীঘ্রই যোগ হবে।</div>':"");
 }
 function renderSug(){
   const q=$("q").value.trim(),box=$("sg");
@@ -306,14 +330,16 @@ function renderSug(){
   box.hidden=!l.length;
 }
 function renderEmg(){
-  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row"><div class="info"><b>${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${bn(e.phone)}</span>${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"red",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
+  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${e.photo?avatar(e):'<div class="av ei">🚨</div>'}<div class="info"><b>${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${bn(e.phone)}</span>${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"red",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
 }
 function renderBlood(){
   const G=["সব","A+","A-","B+","B-","O+","O-","AB+","AB-"];
   $("chips").innerHTML=`<button class="chip ok" aria-pressed="${onlyOk}" data-ok="1">✓ এখন দিতে পারবেন</button>`+G.map(g=>`<button class="chip" aria-pressed="${g===grp}" data-g="${g}">${g}</button>`).join("");
   const ds=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
   const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+" "+(d.phone||""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
-  $("blist").innerHTML=login()+(l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row"><div class="bg">${esc(d.group)}</div><div class="info"><b>${esc(d.name)}</b><span class="pn">${PHs}${bn(d.phone)}</span>${d.last?`<span>শেষ রক্তদান: ${bn(d.ds)} দিন আগে</span>`:""}<span class="tag ${ok?"ok":"wait"}">${ok?"এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${hot("donor_"+d.id)}${delBtn("donor",d.id)}</div>${callBtn(d.phone,"red","donor_"+d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
+  const topD=[...DATA.donor].filter(d=>+d.times>0).sort((a,b)=>b.times-a.times).slice(0,3);
+  const topS=topD.length?`<div class="topd"><b>🏅 শীর্ষ রক্তদাতা</b>${topD.map((d,i)=>`<span>${["🥇","🥈","🥉"][i]} ${esc(d.name)} (${bn(d.times)} বার)</span>`).join("")}</div>`:"";
+  $("blist").innerHTML=login()+topS+(l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row"><div class="bg">${esc(d.group)}</div><div class="info"><b>${esc(d.name)}</b><span class="pn">${PHs}${bn(d.phone)}</span>${d.last?`<span>শেষ রক্তদান: ${bn(d.ds)} দিন আগে</span>`:""}<span class="tag ${ok?"ok":"wait"}">${ok?"এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}${delBtn("donor",d.id)}</div>${callBtn(d.phone,"red","donor_"+d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
 }
 const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
 const dt=s=>{const d=new Date(s);return isNaN(d)?"":bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear())};
@@ -321,17 +347,17 @@ function renderNotices(){
   const l=[...DATA.notice].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
   $("nlist").innerHTML=login()+(l.length?l.map(n=>`<article class="note ${n.urgent?"urgent":""}"><h3>${esc(n.title)}</h3><time>${dt(n.date)}${n.urgent?" · জরুরি":""}</time><p>${esc(n.body)}</p>${delBtn("notice",n.id)}</article>`).join(""):(db?'<div class="empty">এখনো কোনো নোটিশ নেই।</div>':""));
 }
-const summary=p=>{const d=p.data;return p.kind==="notice"?d.title:d.name+" · "+(d.group||d.role||d.note||"")+" · "+bn(d.phone||"")};
+const summary=p=>{const d=p.data;return p.kind==="notice"?d.title:(d.outside?"[বাইরের] ":"")+d.name+" · "+(d.group||d.role||d.note||"")+" · "+bn(d.phone||"")};
 function renderPending(){
   $("abadge").textContent=PENDING.length?bn(PENDING.length):"";renderDash();
   $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row">${p.data&&p.data.photo?avatar(p.data):""}<div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ed2" data-ed="pending|${p.kind}|${p.id}">সম্পাদনা</button><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
 }
-const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderEmg();renderBlood();renderNotices();$("s1").textContent=bn(DATA.person.length);$("s2").textContent=bn(DATA.donor.length);$("s3").textContent=bn(DATA.notice.length)};
+const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();$("s1").textContent=bn(DATA.person.filter(p=>!p.outside).length);$("s2").textContent=bn(DATA.donor.length);$("s3").textContent=bn(DATA.notice.length)};
 
 const FIELDS={
- person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
- donor:'<label>নাম *<input name="name"></label><label>রক্তের গ্রুপ *<select name="group"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>শেষ রক্তদানের তারিখ (না দিলে ফাঁকা রাখুন)<input type="date" name="last"></label>',
- emergency:'<label>নাম *<input name="name"></label><label>বিবরণ<input name="note"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel"></label>',
+ person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label class="chk"><input type="checkbox" name="outside"> এলাকার বাইরের গুরুত্বপূর্ণ ব্যক্তি (ডাক্তার, অফিসার ইত্যাদি)</label><label>কোথায় (প্রতিষ্ঠান/এলাকা)<input name="area" placeholder="যেমন: ময়মনসিংহ মেডিকেল কলেজ"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
+ donor:'<label>নাম *<input name="name"></label><label>রক্তের গ্রুপ *<select name="group"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>শেষ রক্তদানের তারিখ (না দিলে ফাঁকা রাখুন)<input type="date" name="last"></label><label>মোট কতবার রক্ত দিয়েছেন (জানা না থাকলে ফাঁকা)<input name="times" inputmode="numeric" placeholder="যেমন: 3"></label>',
+ emergency:'<label>নাম *<input name="name"></label><label>বিবরণ<input name="note"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel"></label><label>ছবি বা লোগো (ঐচ্ছিক)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
  notice:'<label>শিরোনাম *<input name="title"></label><label>বিস্তারিত *<textarea name="body" rows="4"></textarea></label><label class="chk"><input type="checkbox" name="urgent"> জরুরি নোটিশ</label>'
 };
 function showFields(){photoData="";$("fields").innerHTML=FIELDS[$("kind").value];}
@@ -344,8 +370,9 @@ $("form").addEventListener("submit",async e=>{
   const k=$("kind").value,d={};
   $("fields").querySelectorAll("[name]").forEach(el=>d[el.name]=el.type==="checkbox"?el.checked:el.value.trim());
   if(d.phone!==undefined){d.phone=en(d.phone);if(!/^(01\d{9}|\d{3,6})$/.test(d.phone))return msg("ফোন নম্বর সঠিক নয়। যেমন: 01712345678",1);}
+  if(d.times!==undefined)d.times=Math.max(0,Math.min(99,parseInt(en(d.times))||0));
   if(!(d.name||d.title)||(k==="notice"&&!d.body))return msg("* চিহ্নিত ঘরগুলো পূরণ করুন।",1);
-  if(k==="person"&&photoData)d.photo=photoData;
+  if((k==="person"||k==="emergency")&&photoData)d.photo=photoData;
   if(k==="notice")d.date=new Date().toISOString().slice(0,10);
   try{
     if(isAdmin){await db.collection(KINDS[k].col).add(d);msg("যোগ হয়েছে, সবাই এখন দেখতে পাবে।");}
@@ -354,11 +381,12 @@ $("form").addEventListener("submit",async e=>{
   }catch(err){msg("পাঠানো যায়নি। আপনার লিখতে পারার অনুমতি নেই বা নেটওয়ার্ক সমস্যা।",1);}
 });
 document.addEventListener("click",async e=>{
+  const z=e.target.closest("img[data-zoom]");if(z){$("zi").src=z.src;$("zv").hidden=false;return;}
   const a=e.target.closest("a.call");if(a&&a.dataset.hit&&db)trackHit(a.dataset.hit);
   if(!e.target.closest(".sw"))$("sg").hidden=true;
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.ed){const[s,k,i]=b.dataset.ed.split("|");openEdit(s,k,i);}
-  else if(b.dataset.gave){try{await db.collection("live_donors").doc(b.dataset.gave).update({last:new Date().toISOString().slice(0,10)});}catch(x){}}
+  else if(b.dataset.gave){try{await db.collection("live_donors").doc(b.dataset.gave).update({last:new Date().toISOString().slice(0,10),times:increment(1)});}catch(x){}}
   else if(b.dataset.sg){const p=DATA.person.find(x=>x.id===b.dataset.sg);if(p){$("q").value=p.name;$("sg").hidden=true;renderPeople();trackHit("person_"+p.id);}}
   else if(b.dataset.r!==undefined){roleF=b.dataset.r;renderPeople();renderSug();}
   else if(b.dataset.bk){backup();}
@@ -405,8 +433,8 @@ function renderTicker(){
 }
 const WD=["রবিবার","সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার"];
 function renderDate(){const d=new Date();$("dday").textContent=WD[d.getDay()];$("ddate").textContent=bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear());}
-/* নির্দিষ্ট জায়গার আবহাওয়া চাইলে এখানে দিন, যেমন {lat:24.75,lon:90.40,name:"মোল্লাপাড়া"}; না চাইলে null (আইপি অনুযায়ী) */
-const FIXED=null;
+/* আবহাওয়ার জায়গা: জামালপুর শহর (অক্ষাংশ ২৪.৯২, দ্রাঘিমাংশ ৮৯.৯৫) */
+const FIXED={lat:24.9196,lon:89.9481,name:"জামালপুর শহর"};
 const BNP={Mymensingh:"ময়মনসিংহ",Dhaka:"ঢাকা",Chittagong:"চট্টগ্রাম",Chattogram:"চট্টগ্রাম",Sylhet:"সিলেট",Rajshahi:"রাজশাহী",Khulna:"খুলনা",Barisal:"বরিশাল",Barishal:"বরিশাল",Rangpur:"রংপুর",Gazipur:"গাজীপুর",Narayanganj:"নারায়ণগঞ্জ",Comilla:"কুমিল্লা",Cumilla:"কুমিল্লা",Tangail:"টাঙ্গাইল",Jamalpur:"জামালপুর",Netrakona:"নেত্রকোণা",Netrokona:"নেত্রকোণা",Kishoreganj:"কিশোরগঞ্জ",Sherpur:"শেরপুর",Bogra:"বগুড়া",Bogura:"বগুড়া",Jessore:"যশোর",Jashore:"যশোর",Narsingdi:"নরসিংদী"};
 const wx=c=>c===0?["☀️","পরিষ্কার আকাশ"]:c<=2?["⛅","আংশিক মেঘলা"]:c===3?["☁️","মেঘলা"]:c<=48?["🌫️","কুয়াশা"]:c<=57?["🌦️","গুঁড়ি গুঁড়ি বৃষ্টি"]:c<=67?["🌧️","বৃষ্টি"]:c<=77?["❄️","শীতল আবহাওয়া"]:c<=82?["🌦️","বৃষ্টির ঝাপটা"]:["⛈️","বজ্রসহ বৃষ্টি"];
 async function loadWx(){
@@ -456,6 +484,7 @@ $("ef").addEventListener("submit",async e=>{
   const{src,k,id}=EDIT,d={},m=$("emsg");
   $("ef-fields").querySelectorAll("[name]").forEach(el=>d[el.name]=el.type==="checkbox"?el.checked:el.value.trim());
   if(d.phone!==undefined){d.phone=en(d.phone);if(!/^(01\d{9}|\d{3,6})$/.test(d.phone)){m.textContent="ফোন নম্বর সঠিক নয়।";return;}}
+  if(d.times!==undefined)d.times=Math.max(0,Math.min(99,parseInt(en(d.times))||0));
   if(!(d.name||d.title)||(k==="notice"&&!d.body)){m.textContent="* চিহ্নিত ঘরগুলো পূরণ করুন।";return;}
   const old=src==="pending"?(PENDING.find(x=>x.id===id)||{}).data:DATA[k].find(x=>x.id===id);
   if(editPhoto!==undefined)d.photo=editPhoto;else if(old&&old.photo)d.photo=old.photo;
@@ -476,14 +505,15 @@ function renderDash(){
   el.innerHTML=`<div class="dsh"><h3>ড্যাশবোর্ড</h3><p>মোট কল/ক্লিক: <b>${bn(total)}</b> · অপেক্ষায়: <b>${bn(PENDING.length)}</b></p>${top.length?`<p class="mut">সবচেয়ে বেশি খোঁজা:</p><ol>${top.map(([k,n])=>`<li>${esc(nm[k])} <small>${bn(n)} বার</small></li>`).join("")}</ol>`:'<p class="mut">এখনো কোনো কল হয়নি।</p>'}<button class="del ed" data-bk="1">ব্যাকআপ ডাউনলোড (CSV)</button></div>`;
 }
 function backup(){
-  const rows=[["ধরন","নাম/শিরোনাম","পেশা/গ্রুপ/বিবরণ","ফোন","শেষ রক্তদান/তারিখ"]];
-  DATA.person.forEach(x=>rows.push(["মানুষ",x.name,x.role||"",x.phone,""]));
-  DATA.donor.forEach(x=>rows.push(["রক্তদাতা",x.name,x.group,x.phone,x.last||""]));
+  const rows=[["ধরন","নাম/শিরোনাম","পেশা/গ্রুপ/বিবরণ","ফোন","শেষ রক্তদান/তারিখ","এলাকা","রক্তদানের সংখ্যা"]];
+  DATA.person.forEach(x=>rows.push([x.outside?"বাইরের ব্যক্তি":"মানুষ",x.name,x.role||"",x.phone,"",x.area||"",""]));
+  DATA.donor.forEach(x=>rows.push(["রক্তদাতা",x.name,x.group,x.phone,x.last||"","",x.times||0]));
   DATA.emergency.forEach(x=>rows.push(["জরুরি",x.name,x.note||"",x.phone,""]));
   DATA.notice.forEach(x=>rows.push(["নোটিশ",x.title,x.body,"",x.date||""]));
   const csv="\uFEFF"+rows.map(r=>r.map(c=>'"'+String(c==null?"":c).replace(/"/g,'""')+'"').join(",")).join("\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="mullapara-backup-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();
 }
+$("zv").addEventListener("click",()=>{$("zv").hidden=true;});
 renderDate();loadWx();
 </script>
 
