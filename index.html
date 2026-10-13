@@ -335,7 +335,7 @@ function renderPeople(){
 }
 function renderOut(){
   const l=DATA.person.filter(p=>p.outside).sort((a,b)=>(HITS["person_"+b.id]||0)-(HITS["person_"+a.id]||0)||String(a.name).localeCompare(String(b.name),"bn"));
-  $("olist").innerHTML=l.length?l.map(p=>personRow(p,false,true)).join(""):(db?'<div class="empty">বাইরের গুরুত্বপূর্ণ ব্যক্তির তথ্য শীঘ্রই যোগ হবে।</div>':"");
+  $("olist").innerHTML=l.length?l.map(p=>personRow(p,false)).join(""):(db?'<div class="empty">বাইরের গুরুত্বপূর্ণ ব্যক্তির তথ্য শীঘ্রই যোগ হবে।</div>':"");
 }
 function renderSug(){
   const q=$("q").value.trim(),box=$("sg");
@@ -345,7 +345,7 @@ function renderSug(){
   box.hidden=!l.length;
 }
 function renderEmg(){
-  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${e.photo?avatar(e):'<div class="av ei">🚨</div>'}<div class="info"><b>${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"red",e.fixed?"":"emergency_"+e.id,true)}</div>`).join("");
+  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${avatar(e)}<div class="info"><b class="nm">${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${fmtPh(e.phone)}</span>${e.fixed?"":hot("emergency_"+e.id)}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
 }
 function renderBlood(){
   const G=["সব","A+","A-","B+","B-","O+","O-","AB+","AB-"];
