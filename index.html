@@ -15,7 +15,7 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#0e1712;--card:#16221b;--ink:#e8efe9;--mute:#9bada1;--line:#25352b;--green:#8fd3a8;--green2:#2f8a57;--soft:#1b2d22;--red:#ff8d84;--redbg:#3a1c1a;--ok:#7bd69b;--okbg:#15301f;--warn:#f0c766;--warnbg:#382d10;--hero:#123f25;--sh:none}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Bengali","Hind Siliguri","Kalpurush",system-ui,sans-serif;font-size:17px;line-height:1.55;padding-bottom:80px;display:flex;flex-direction:column;min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans Bengali","Hind Siliguri","Kalpurush",system-ui,sans-serif;font-size:1.0625rem;line-height:1.55;padding-bottom:80px;display:flex;flex-direction:column;min-height:100%}
 header{background:var(--hero);color:#fff;position:relative;overflow:hidden;padding:30px 20px 74px}
 .hw{max-width:900px;margin:0 auto;position:relative;z-index:1}
 header h1{margin:0;font-size:clamp(2.4rem,9vw,3.4rem);line-height:1.1;font-weight:700;letter-spacing:-.01em}
@@ -31,7 +31,7 @@ section{display:none}section.on{display:block}
 h2{font-size:1.35rem;margin:0 0 14px;font-weight:700}
 .search{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;margin-bottom:16px;box-shadow:var(--sh)}
 .search:focus,button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d9a82f;outline-offset:2px}
-.grid{display:grid;gap:10px}
+.grid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
 .row{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;box-shadow:var(--sh)}
 .av{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:1.3rem;overflow:hidden}
 .av img{width:100%;height:100%;object-fit:cover}
@@ -72,7 +72,7 @@ nav button[aria-selected="true"]{color:var(--green)}
 @media (min-width:820px){
  body{padding-bottom:0}nav{position:sticky;top:env(safe-area-inset-top,0px);bottom:auto;order:1;border-top:0;border-bottom:1px solid var(--line);margin-top:14px;padding:0 max(16px,calc((100% - 900px)/2))}
  nav button{flex-direction:row;justify-content:center;gap:8px;font-size:1rem;padding:14px 4px}
- .stats{order:0}main{order:2}.grid{grid-template-columns:1fr 1fr}
+ .stats{order:0}main{order:2}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (prefers-reduced-motion:no-preference){header h1{animation:rise .6s ease-out}@keyframes rise{from{opacity:0;transform:translateY(8px)}}}
 
@@ -190,6 +190,36 @@ nav button svg{overflow:visible}
 .sos strong svg{width:1.3rem;height:1.3rem;fill:currentColor;vertical-align:-3px;margin-right:8px}
 .call.num{white-space:nowrap;font-size:.98rem;padding:11px 14px}
 header h1.nm{flex:1;min-width:0;font-size:clamp(1.5rem,7vw,2.8rem);line-height:1.25}
+
+/* মোবাইলের পর্দায় ফিট: কোনো কার্ড যেন পর্দার চেয়ে চওড়া না হয় */
+html,body{max-width:100%;overflow-x:hidden}
+.grid{grid-template-columns:minmax(0,1fr)}
+.top{grid-template-columns:minmax(0,1fr)}
+.top .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sos{grid-template-columns:repeat(2,minmax(0,1fr))}.sos a{min-width:0}
+.row{min-width:0;max-width:100%}.row .info{min-width:0}
+.note,.hint,.empty,.topd{max-width:100%;overflow-wrap:anywhere}
+@media (min-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+html{overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-width:0;max-width:100%}
+main,.top,.hw,.brand,.info,.row,.note,.dw>div,.tt{min-width:0}
+.grid>*{min-width:0;max-width:100%}
+.top{grid-template-columns:minmax(0,1fr)}
+.stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sos{grid-template-columns:repeat(2,minmax(0,1fr))}
+img,svg,canvas{max-width:100%}
+nav button{min-width:0;white-space:nowrap}
+@media (max-width:380px){
+ html{font-size:15px}
+ main{padding:18px 12px}.top{padding:0 12px}
+ .row{gap:10px;padding:10px}.av{width:48px;height:48px;font-size:1.1rem}.bg{width:46px;height:46px;font-size:1.05rem}
+ .call{padding:9px 12px;font-size:.9rem}.call svg{width:16px;height:16px}
+ .sos a strong{font-size:1.6rem}.stats b{font-size:1.1rem}
+ .brand{padding-right:48px}.logo{width:46px;height:46px}.bell{width:38px;height:38px}
+}
+@media (max-width:330px){html{font-size:14px}.hb button{padding:5px 10px;font-size:.8rem}.dw>div{padding:6px 8px}}
+@media (min-width:1100px){body{font-size:1.1rem}}
 </style>
 </head>
 <body>
