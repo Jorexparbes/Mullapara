@@ -238,6 +238,9 @@ nav button{min-width:0;white-space:nowrap}
 button.call{border:0;font:inherit;cursor:pointer}
 .cbs{flex:none;display:flex;gap:8px;align-items:center}
 .call.wa{background:#1fa855;--d:#0e6b34;padding:11px 12px}.call.wa svg{width:20px;height:20px}
+.call.wa.off{position:relative;background:transparent;color:var(--mute);opacity:.38;box-shadow:inset 0 0 0 1.5px var(--line);pointer-events:none;cursor:default}
+.call.wa.off::after{content:"";position:absolute;left:9px;right:9px;top:50%;border-top:2px solid currentColor;transform:rotate(-38deg)}
+@media (prefers-color-scheme:dark){.call.wa.off{opacity:.5}}
 </style>
 </head>
 <body>
@@ -259,7 +262,7 @@ button.call{border:0;font:inherit;cursor:pointer}
 
 <main>
 <section id="people" class="on">
-  <div class="sw"><input class="search" id="q" type="search" placeholder="নাম, পেশা বা নম্বর লিখুন (বাংলা বা English)" autocomplete="off" aria-label="খুঁজুন"><div id="sg" class="sg" hidden></div></div>
+  <div class="sw"><input class="search" id="q" type="search" placeholder="নাম বা পেশা লিখুন (বাংলা বা English)" autocomplete="off" aria-label="খুঁজুন"><div id="sg" class="sg" hidden></div></div>
   <div id="rchips" class="chips rc"></div>
   <div id="plist" class="grid"></div>
 </section>
@@ -367,7 +370,7 @@ const PHs='<svg class="pi" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 
 const COLORS=["#1f5a3a","#2b6f8a","#8a5a2b","#6a3d8a","#a2433a","#3b7a57","#9a7b1e"];
 const color=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
 const avatar=p=>`<div class="av" style="background:${color(p.name)}">${p.photo?`<img src="${esc(p.photo)}" data-zoom="1" alt="">`:esc([...p.name.replace(/^(মোঃ|ডাঃ|মো\.)\s*/,"")][0]||"?")}</div>`;
-const callBtn=(ph,cls="",k="",num=false)=>{const c=`<a class="call ${cls}${num?" num":""}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন ${esc(fmtPh(ph))}">${PH}${num?fmtPh(ph):"কল"}</a>`;return waOk(ph)?`<div class="cbs">${c}<a class="call wa" href="${waUrl(ph,"আসসালামু আলাইকুম")}" target="_blank" rel="noopener" ${k?`data-hit="${esc(k)}"`:""} aria-label="হোয়াটসঅ্যাপে মেসেজ করুন">${WAI}</a></div>`:c};
+const callBtn=(ph,cls="",k="",num=false,nowa=false)=>{const c=`<a class="call ${cls}${num?" num":""}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন ${esc(fmtPh(ph))}">${PH}${num?fmtPh(ph):"কল"}</a>`;return waOk(ph)&&!nowa?`<div class="cbs">${c}<a class="call wa" href="${waUrl(ph,"আসসালামু আলাইকুম")}" target="_blank" rel="noopener" ${k?`data-hit="${esc(k)}"`:""} aria-label="হোয়াটসঅ্যাপে মেসেজ করুন">${WAI}</a></div>`:`<div class="cbs">${c}${WAG}</div>`};
 const inScope=p=>scope==="out"?!!p.outside:!p.outside;
 const LV=[[20,"🏆","মানবতার বাতিঘর","l4"],[15,"👑","রক্তসম্রাট","l3"],[10,"🥈","মহান দাতা","l2"],[5,"🥉","রক্তবীর","l1"],[3,"🎖️","রক্ত সৈনিক","l5"]];
 const fmtPh=p=>{const d=en(p||"");return bn(/^01\d{9}$/.test(d)?d.slice(0,5)+"-"+d.slice(5):String(p||""))};
@@ -384,19 +387,21 @@ const dsOf=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
 const CAN={"A+":["A+","A-","O+","O-"],"A-":["A-","O-"],"B+":["B+","B-","O+","O-"],"B-":["B-","O-"],"AB+":["A+","A-","B+","B-","AB+","AB-","O+","O-"],"AB-":["A-","B-","AB-","O-"],"O+":["O+","O-"],"O-":["O-"]};
 const maskPh=p=>{const d=en(p||"");return /^01\d{9}$/.test(d)?bn(d.slice(0,3)+"••••••"+d.slice(-2)):"•••••"};
 const WAI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+const WAG='<span class="call wa off" aria-hidden="true" title="WhatsApp নেই">'+WAI+'</span>';
 const waOk=p=>/^01\d{9}$/.test(en(p||""));
 const waUrl=(p,t)=>"https://wa.me/88"+en(p)+(t?"?text="+encodeURIComponent(t):"");
 const urgText=()=>{const g=$("ug").value,h=$("uh").value.trim(),ph=en($("up").value),u=parseInt(en($("uu").value))||0;return "🩸 জরুরি রক্ত দরকার!"+(g?"\nগ্রুপ: "+g+(u?" ("+bn(u)+" ব্যাগ)":""):"")+(h?"\nহাসপাতাল: "+h:"")+(/^01\d{9}$/.test(ph)?"\nযোগাযোগ: "+fmtPh(ph):"")+"\nআরও দাতা: "+location.origin};
 let scope="local",photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
 const login=()=>"";
-const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
+const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}${k!=="notice"?`<button class="del ed" data-nowa="${k}|${id}">${((DATA[k].find(x=>x.id===id)||{}).nowa)?"✗ WhatsApp বন্ধ":"✓ WhatsApp চালু"}</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
 
 function rankPeople(q){
   const has=String(q||"").trim().length>0;
-  return DATA.person.filter(p=>has||!p.outside).filter(p=>!roleF||p.role===roleF).map(p=>({p,s:mScore(q,(p.name||"")+" "+(p.role||"")+" "+(p.area||"")+" "+(p.phone||""))})).filter(x=>x.s>0)
+  return DATA.person.filter(p=>has||!p.outside).filter(p=>!roleF||p.role===roleF).map(p=>({p,s:mScore(q,(p.name||"")+" "+(p.role||"")+" "+(p.area||"")+(isAdmin?" "+(p.phone||""):""))})).filter(x=>x.s>0)
    .sort((a,b)=>b.s-a.s||(HITS["person_"+b.p.id]||0)-(HITS["person_"+a.p.id]||0)||String(a.p.name).localeCompare(String(b.p.name),"bn")).map(x=>x.p);
 }
-const personRow=(p,tag=true,num=false)=>`<div class="row">${avatar(p)}<div class="info"><b class="nm">${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}${p.area?`<span>📍 ${esc(p.area)}</span>`:""}${num?"":`<span class="pn">${PHs}${fmtPh(p.phone)}</span>`}${p.outside&&tag?'<span class="tag out">🌐 এলাকার বাইরের</span>':""}${hot("person_"+p.id)}${delBtn("person",p.id)}</div>${callBtn(p.phone,"","person_"+p.id,num)}</div>`;
+const pBtn=p=>`<div class="cbs"><button type="button" class="call" data-pcall="${esc(p.id)}" aria-label="${esc(p.name)} কে কল করুন">${PH}কল</button>${waOk(p.phone)&&!p.nowa?`<button type="button" class="call wa" data-pwa="${esc(p.id)}" aria-label="${esc(p.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:WAG}</div>`;
+const personRow=(p,tag=true,num=false)=>`<div class="row">${avatar(p)}<div class="info"><b class="nm">${esc(p.name)}</b>${p.role?`<span>${esc(p.role)}</span>`:""}${p.area?`<span>📍 ${esc(p.area)}</span>`:""}${num?"":`<span class="pn">${PHs}${isAdmin?fmtPh(p.phone):maskPh(p.phone)}</span>`}${p.outside&&tag?'<span class="tag out">🌐 এলাকার বাইরের</span>':""}${hot("person_"+p.id)}${delBtn("person",p.id)}</div>${pBtn(p)}</div>`;
 function renderPeople(){
   const l=rankPeople($("q").value);
   const roles=[...DATA.person.filter(p=>!p.outside).reduce((m,p)=>p.role?m.set(p.role,(m.get(p.role)||0)+1):m,new Map())].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
@@ -415,7 +420,7 @@ function renderSug(){
   box.hidden=!l.length;
 }
 function renderEmg(){
-  $("elist").innerHTML=!LOADED.emergency?SK(3):!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${avatar(e)}<div class="info"><b class="nm">${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${fmtPh(e.phone)}</span>${e.fixed?"":hot("emergency_"+e.id)}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
+  $("elist").innerHTML=!LOADED.emergency?SK(3):!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${avatar(e)}<div class="info"><b class="nm">${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${fmtPh(e.phone)}</span>${e.fixed?"":hot("emergency_"+e.id)}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"",e.fixed?"":"emergency_"+e.id,false,e.nowa)}</div>`).join("");
 }
 function renderBlood(){
   const G=["সব","A+","A-","B+","B-","O+","O-","AB+","AB-"];
@@ -424,7 +429,7 @@ function renderBlood(){
   const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+(isAdmin?" "+(d.phone||""):""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
   const topD=[...DATA.donor].filter(d=>+d.times>0).sort((a,b)=>b.times-a.times).slice(0,3);
   const topS=topD.length?`<div class="topd"><b>🏅 শীর্ষ রক্তদাতা</b>${topD.map((d,i)=>`<span>${["🥇","🥈","🥉"][i]} ${esc(d.name)} (${bn(d.times)} বার)</span>`).join("")}</div>`:"";
-  $("blist").innerHTML=login()+topS+(!LOADED.donor?SK(4):l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:""}</div><div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
+  $("blist").innerHTML=login()+topS+(!LOADED.donor?SK(4):l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)&&!d.nowa?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:WAG}</div><div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
 }
 const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
 const dt=s=>{const d=new Date(s);return isNaN(d)?"":bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear())};
@@ -476,7 +481,10 @@ document.addEventListener("click",async e=>{
   else if(b.dataset.r!==undefined){roleF=b.dataset.r;renderPeople();renderSug();}
   else if(b.dataset.urg){const x=$("urgbox");x.hidden=!x.hidden;}
   else if(b.dataset.dcall){const d=DATA.donor.find(x=>x.id===b.dataset.dcall);if(d){trackHit("donor_"+d.id);location.href="tel:"+en(d.phone);}}
-  else if(b.dataset.dwa){const d=DATA.donor.find(x=>x.id===b.dataset.dwa);if(d&&waOk(d.phone)){trackHit("donor_"+d.id);window.open(waUrl(d.phone,b.dataset.utext?urgText():"আসসালামু আলাইকুম, মোল্লাপাড়া ইনফো থেকে আপনার নম্বর পেয়েছি।"),"_blank","noopener");}}
+  else if(b.dataset.pcall){const p=DATA.person.find(x=>x.id===b.dataset.pcall);if(p){trackHit("person_"+p.id);location.href="tel:"+en(p.phone);}}
+  else if(b.dataset.pwa){const p=DATA.person.find(x=>x.id===b.dataset.pwa);if(p&&waOk(p.phone)&&!p.nowa){trackHit("person_"+p.id);window.open(waUrl(p.phone,"আসসালামু আলাইকুম"),"_blank","noopener");}}
+  else if(b.dataset.nowa){const[k,id]=b.dataset.nowa.split("|");const it=DATA[k].find(x=>x.id===id);if(it){try{await db.collection(KINDS[k].col).doc(id).update({nowa:!it.nowa});}catch(x){}}}
+  else if(b.dataset.dwa){const d=DATA.donor.find(x=>x.id===b.dataset.dwa);if(d&&waOk(d.phone)&&!d.nowa){trackHit("donor_"+d.id);window.open(waUrl(d.phone,b.dataset.utext?urgText():"আসসালামু আলাইকুম, মোল্লাপাড়া ইনফো থেকে আপনার নম্বর পেয়েছি।"),"_blank","noopener");}}
   else if(b.dataset.ucopy){try{await navigator.clipboard.writeText(urgText());b.textContent="✓ কপি হয়েছে";}catch(x){b.textContent="কপি করা যায়নি";}}
   else if(b.dataset.bk){backup();}
   else if(b.id==="erm"){editPhoto="";$("epv").innerHTML="";}
@@ -495,7 +503,7 @@ $("bq").addEventListener("input",renderBlood);
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.t)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.go)));
 showFields();renderAll();
-const urgRow=d=>`<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" data-utext="1" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:""}</div></div>`;
+const urgRow=d=>`<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)&&!d.nowa?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" data-utext="1" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:WAG}</div></div>`;
 function renderUrg(){
   const g=$("ug").value,box=$("ulist");
   if(!g){box.innerHTML="";return;}
@@ -598,6 +606,7 @@ $("ef").addEventListener("submit",async e=>{
   const old=src==="pending"?(PENDING.find(x=>x.id===id)||{}).data:DATA[k].find(x=>x.id===id);
   if(editPhoto!==undefined)d.photo=editPhoto;else if(old&&old.photo)d.photo=old.photo;
   if(k==="notice"&&old&&old.date)d.date=old.date;
+  if(old&&old.nowa)d.nowa=true;
   try{
     if(src==="pending")await db.collection("pending").doc(id).update({data:d});
     else await db.collection(KINDS[k].col).doc(id).set(d);
