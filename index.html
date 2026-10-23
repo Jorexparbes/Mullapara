@@ -236,6 +236,8 @@ nav button{min-width:0;white-space:nowrap}
 .uact{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
 #ures h3{margin:14px 0 10px;font-size:1.05rem}
 button.call{border:0;font:inherit;cursor:pointer}
+.cbs{flex:none;display:flex;gap:8px;align-items:center}
+.call.wa{background:#1fa855;--d:#0e6b34;padding:11px 12px}.call.wa svg{width:20px;height:20px}
 </style>
 </head>
 <body>
@@ -279,14 +281,14 @@ button.call{border:0;font:inherit;cursor:pointer}
   <button type="button" class="send urgb" data-urg="1">🆘 জরুরি রক্ত চাই</button>
   <div id="urgbox" hidden>
     <form id="urgf" novalidate>
-      <label>রক্তের গ্রুপ *<select id="ug"><option value="">বেছে নিন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label>
+      <label>রক্তের গ্রুপ * (বেছে নিলেই দাতার তালিকা আসবে)<select id="ug"><option value="">বেছে নিন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label>
       <label>হাসপাতালের নাম ও এলাকা *<input id="uh" maxlength="100" placeholder="যেমন: জামালপুর সদর হাসপাতাল"></label>
       <label>যোগাযোগের নম্বর *<input id="up" inputmode="tel" placeholder="01XXXXXXXXX"></label>
       <label>কত ব্যাগ দরকার (ঐচ্ছিক)<input id="uu" inputmode="numeric" placeholder="যেমন: 2"></label>
       <div id="urm" class="hint bad" role="alert"></div>
-      <button class="send" type="submit">দাতা খুঁজুন ও শেয়ার করুন</button>
+      <button class="send" type="submit">গ্রামের গ্রুপে শেয়ারের মেসেজ বানান</button>
     </form>
-    <div id="ures"></div>
+    <div id="ushare"></div><div id="ulist"></div>
   </div>
   <input class="search" id="bq" type="search" placeholder="দাতার নাম খুঁজুন" autocomplete="off" aria-label="দাতা খুঁজুন">
   <div class="chips" id="chips" role="group" aria-label="রক্তের গ্রুপ"></div>
@@ -365,7 +367,7 @@ const PHs='<svg class="pi" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 
 const COLORS=["#1f5a3a","#2b6f8a","#8a5a2b","#6a3d8a","#a2433a","#3b7a57","#9a7b1e"];
 const color=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
 const avatar=p=>`<div class="av" style="background:${color(p.name)}">${p.photo?`<img src="${esc(p.photo)}" data-zoom="1" alt="">`:esc([...p.name.replace(/^(মোঃ|ডাঃ|মো\.)\s*/,"")][0]||"?")}</div>`;
-const callBtn=(ph,cls="",k="",num=false)=>`<a class="call ${cls}${num?" num":""}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন ${esc(fmtPh(ph))}">${PH}${num?fmtPh(ph):"কল"}</a>`;
+const callBtn=(ph,cls="",k="",num=false)=>{const c=`<a class="call ${cls}${num?" num":""}" href="tel:${esc(ph)}" ${k?`data-hit="${esc(k)}"`:""} aria-label="কল করুন ${esc(fmtPh(ph))}">${PH}${num?fmtPh(ph):"কল"}</a>`;return waOk(ph)?`<div class="cbs">${c}<a class="call wa" href="${waUrl(ph,"আসসালামু আলাইকুম")}" target="_blank" rel="noopener" ${k?`data-hit="${esc(k)}"`:""} aria-label="হোয়াটসঅ্যাপে মেসেজ করুন">${WAI}</a></div>`:c};
 const inScope=p=>scope==="out"?!!p.outside:!p.outside;
 const LV=[[20,"🏆","মানবতার বাতিঘর","l4"],[15,"👑","রক্তসম্রাট","l3"],[10,"🥈","মহান দাতা","l2"],[5,"🥉","রক্তবীর","l1"],[3,"🎖️","রক্ত সৈনিক","l5"]];
 const fmtPh=p=>{const d=en(p||"");return bn(/^01\d{9}$/.test(d)?d.slice(0,5)+"-"+d.slice(5):String(p||""))};
@@ -380,7 +382,11 @@ const SK=n=>Array(n).fill('<div class="sk skrow" aria-hidden="true"></div>').joi
 const stat=(id,k,v)=>{const e=$(id);e.classList.toggle("sk",!LOADED[k]);e.textContent=LOADED[k]?bn(v):"০০";};
 const dsOf=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
 const CAN={"A+":["A+","A-","O+","O-"],"A-":["A-","O-"],"B+":["B+","B-","O+","O-"],"B-":["B-","O-"],"AB+":["A+","A-","B+","B-","AB+","AB-","O+","O-"],"AB-":["A-","B-","AB-","O-"],"O+":["O+","O-"],"O-":["O-"]};
-let URG_TEXT="";
+const maskPh=p=>{const d=en(p||"");return /^01\d{9}$/.test(d)?bn(d.slice(0,3)+"••••••"+d.slice(-2)):"•••••"};
+const WAI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+const waOk=p=>/^01\d{9}$/.test(en(p||""));
+const waUrl=(p,t)=>"https://wa.me/88"+en(p)+(t?"?text="+encodeURIComponent(t):"");
+const urgText=()=>{const g=$("ug").value,h=$("uh").value.trim(),ph=en($("up").value),u=parseInt(en($("uu").value))||0;return "🩸 জরুরি রক্ত দরকার!"+(g?"\nগ্রুপ: "+g+(u?" ("+bn(u)+" ব্যাগ)":""):"")+(h?"\nহাসপাতাল: "+h:"")+(/^01\d{9}$/.test(ph)?"\nযোগাযোগ: "+fmtPh(ph):"")+"\nআরও দাতা: "+location.origin};
 let scope="local",photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
 const login=()=>"";
 const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
@@ -418,7 +424,7 @@ function renderBlood(){
   const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+(isAdmin?" "+(d.phone||""):""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
   const topD=[...DATA.donor].filter(d=>+d.times>0).sort((a,b)=>b.times-a.times).slice(0,3);
   const topS=topD.length?`<div class="topd"><b>🏅 শীর্ষ রক্তদাতা</b>${topD.map((d,i)=>`<span>${["🥇","🥈","🥉"][i]} ${esc(d.name)} (${bn(d.times)} বার)</span>`).join("")}</div>`:"";
-  $("blist").innerHTML=login()+topS+(!LOADED.donor?SK(4):l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b>${isAdmin?`<span class="pn">${PHs}${fmtPh(d.phone)}</span>`:""}${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button><div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
+  $("blist").innerHTML=login()+topS+(!LOADED.donor?SK(4):l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:""}</div><div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
 }
 const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
 const dt=s=>{const d=new Date(s);return isNaN(d)?"":bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear())};
@@ -431,7 +437,7 @@ function renderPending(){
   $("abadge").textContent=PENDING.length?bn(PENDING.length):"";renderDash();
   $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row">${p.data&&p.data.photo?avatar(p.data):""}<div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ed2" data-ed="pending|${p.kind}|${p.id}">সম্পাদনা</button><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
 }
-const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();stat("s1","person",DATA.person.filter(p=>!p.outside).length);stat("s2","donor",DATA.donor.length);stat("s3","notice",DATA.notice.length)};
+const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();renderUrg();stat("s1","person",DATA.person.filter(p=>!p.outside).length);stat("s2","donor",DATA.donor.length);stat("s3","notice",DATA.notice.length)};
 
 const FIELDS={
  person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label class="chk"><input type="checkbox" name="outside"> এলাকার বাইরের গুরুত্বপূর্ণ ব্যক্তি (ডাক্তার, অফিসার ইত্যাদি)</label><label>কোথায় (প্রতিষ্ঠান/এলাকা)<input name="area" placeholder="যেমন: ময়মনসিংহ মেডিকেল কলেজ"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
@@ -470,7 +476,8 @@ document.addEventListener("click",async e=>{
   else if(b.dataset.r!==undefined){roleF=b.dataset.r;renderPeople();renderSug();}
   else if(b.dataset.urg){const x=$("urgbox");x.hidden=!x.hidden;}
   else if(b.dataset.dcall){const d=DATA.donor.find(x=>x.id===b.dataset.dcall);if(d){trackHit("donor_"+d.id);location.href="tel:"+en(d.phone);}}
-  else if(b.dataset.ucopy){try{await navigator.clipboard.writeText(URG_TEXT);b.textContent="✓ কপি হয়েছে";}catch(x){b.textContent="কপি করা যায়নি";}}
+  else if(b.dataset.dwa){const d=DATA.donor.find(x=>x.id===b.dataset.dwa);if(d&&waOk(d.phone)){trackHit("donor_"+d.id);window.open(waUrl(d.phone,b.dataset.utext?urgText():"আসসালামু আলাইকুম, মোল্লাপাড়া ইনফো থেকে আপনার নম্বর পেয়েছি।"),"_blank","noopener");}}
+  else if(b.dataset.ucopy){try{await navigator.clipboard.writeText(urgText());b.textContent="✓ কপি হয়েছে";}catch(x){b.textContent="কপি করা যায়নি";}}
   else if(b.dataset.bk){backup();}
   else if(b.id==="erm"){editPhoto="";$("epv").innerHTML="";}
   else if(b.dataset.ok){onlyOk=!onlyOk;renderBlood();}
@@ -488,19 +495,25 @@ $("bq").addEventListener("input",renderBlood);
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.t)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.go)));
 showFields();renderAll();
+const urgRow=d=>`<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${isAdmin?fmtPh(d.phone):maskPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><div class="cbs"><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button>${waOk(d.phone)?`<button type="button" class="call wa" data-dwa="${esc(d.id)}" data-utext="1" aria-label="${esc(d.name)} কে হোয়াটসঅ্যাপ করুন">${WAI}</button>`:""}</div></div>`;
+function renderUrg(){
+  const g=$("ug").value,box=$("ulist");
+  if(!g){box.innerHTML="";return;}
+  if(!LOADED.donor){box.innerHTML=SK(3);return;}
+  const all=DATA.donor.filter(d=>CAN[g].includes(d.group)).map(d=>({...d,ds:dsOf(d)}));
+  const ok=all.filter(d=>d.ds>=90).sort((a,b)=>(b.group===g)-(a.group===g)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
+  const wait=all.length-ok.length;
+  box.innerHTML=`<h3>${esc(g)} গ্রুপের জন্য এখন রক্ত দিতে পারবেন (${bn(ok.length)} জন)</h3>`+
+    (ok.length?`<div class="grid">${ok.map(urgRow).join("")}</div>`:'<div class="empty">এই মুহূর্তে মিল থাকা দাতা তালিকায় নেই। গ্রামের গ্রুপে শেয়ার করুন।</div>')+
+    (wait?`<div class="hint" style="margin-top:12px">আরও ${bn(wait)} জন মিল আছেন, কিন্তু তাঁদের ৯০ দিন পূর্ণ হয়নি।</div>`:"");
+}
+$("ug").addEventListener("change",renderUrg);
 $("urgf").addEventListener("submit",e=>{
   e.preventDefault();
-  const g=$("ug").value,h=$("uh").value.trim(),ph=en($("up").value),u=parseInt(en($("uu").value))||0,m=$("urm"),box=$("ures");
-  if(!g||h.length<2||!/^01\d{9}$/.test(ph)){m.textContent="গ্রুপ, হাসপাতাল আর ১১ ডিজিটের নম্বর দিন।";box.innerHTML="";return;}
+  const g=$("ug").value,h=$("uh").value.trim(),ph=en($("up").value),m=$("urm"),sh=$("ushare");
+  if(!g||h.length<2||!/^01\d{9}$/.test(ph)){m.textContent="গ্রুপ, হাসপাতালের নাম আর ১১ ডিজিটের নম্বর দিন।";sh.innerHTML="";return;}
   m.textContent="";
-  URG_TEXT=`🩸 জরুরি রক্ত দরকার!\nগ্রুপ: ${g}${u?` (${bn(u)} ব্যাগ)`:""}\nহাসপাতাল: ${h}\nযোগাযোগ: ${fmtPh(ph)}\nআরও দাতা: ${location.origin}`;
-  const ok=DATA.donor.filter(d=>CAN[g].includes(d.group)).map(d=>({...d,ds:dsOf(d)})).filter(d=>d.ds>=90)
-    .sort((a,b)=>(b.group===g)-(a.group===g)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
-  box.innerHTML=`<div class="hint good">অনুরোধ তৈরি হয়েছে। নিচের বাটনে গ্রামের হোয়াটসঅ্যাপ গ্রুপে পাঠান।</div>
-    <div class="uact"><a class="call" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(URG_TEXT)}">💬 হোয়াটসঅ্যাপে শেয়ার</a><button type="button" class="call" data-ucopy="1">📋 কপি</button></div>
-    <h3>এখন রক্ত দিতে পারবেন এমন দাতা (${bn(ok.length)} জন)</h3>`+
-    (ok.length?`<div class="grid">`+ok.map(d=>`<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button></div>`).join("")+`</div>`
-     :'<div class="empty">এই মুহূর্তে মিল থাকা দাতা তালিকায় নেই। হোয়াটসঅ্যাপে শেয়ার করুন।</div>');
+  sh.innerHTML=`<div class="hint good">মেসেজ তৈরি হয়েছে। গ্রামের হোয়াটসঅ্যাপ গ্রুপে পাঠান, অথবা নিচের দাতাদের সরাসরি হোয়াটসঅ্যাপ করুন।</div><div class="uact"><a class="call" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(urgText())}">${WAI} গ্রুপে শেয়ার</a><button type="button" class="call" data-ucopy="1">📋 কপি</button></div>`;
 });
 let unsubP=null;
 try{
