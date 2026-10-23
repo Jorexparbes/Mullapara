@@ -220,6 +220,22 @@ nav button{min-width:0;white-space:nowrap}
 }
 @media (max-width:330px){html{font-size:14px}.hb button{padding:5px 10px;font-size:.8rem}.dw>div{padding:6px 8px}}
 @media (min-width:1100px){body{font-size:1.1rem}}
+
+/* === লোডিং স্কেলিটন === */
+.sk{position:relative;overflow:hidden;background:var(--line);border-radius:14px}
+.sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shm 1.2s infinite}
+@keyframes shm{to{transform:translateX(100%)}}
+.skrow{height:82px}
+.stats b.sk{color:transparent;width:2.4em;margin:3px auto;border-radius:8px}
+@media (prefers-reduced-motion:reduce){.sk::after{animation:none}}
+/* === জরুরি রক্ত চাই (ডাটাবেস ছাড়া, ফ্রি) === */
+.urgb{background:var(--redbtn);--d:#7a1812;margin-bottom:12px}
+#urgbox[hidden]{display:none}
+#urgf{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--sh);max-width:560px;margin-bottom:14px}
+#urm:empty{display:none}
+.uact{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+#ures h3{margin:14px 0 10px;font-size:1.05rem}
+button.call{border:0;font:inherit;cursor:pointer}
 </style>
 </head>
 <body>
@@ -260,7 +276,19 @@ nav button{min-width:0;white-space:nowrap}
 
 <section id="blood">
   <h2>স্মার্ট ব্লাড ব্যাংক</h2>
-  <input class="search" id="bq" type="search" placeholder="দাতার নাম বা নম্বর খুঁজুন" autocomplete="off" aria-label="দাতা খুঁজুন">
+  <button type="button" class="send urgb" data-urg="1">🆘 জরুরি রক্ত চাই</button>
+  <div id="urgbox" hidden>
+    <form id="urgf" novalidate>
+      <label>রক্তের গ্রুপ *<select id="ug"><option value="">বেছে নিন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label>
+      <label>হাসপাতালের নাম ও এলাকা *<input id="uh" maxlength="100" placeholder="যেমন: জামালপুর সদর হাসপাতাল"></label>
+      <label>যোগাযোগের নম্বর *<input id="up" inputmode="tel" placeholder="01XXXXXXXXX"></label>
+      <label>কত ব্যাগ দরকার (ঐচ্ছিক)<input id="uu" inputmode="numeric" placeholder="যেমন: 2"></label>
+      <div id="urm" class="hint bad" role="alert"></div>
+      <button class="send" type="submit">দাতা খুঁজুন ও শেয়ার করুন</button>
+    </form>
+    <div id="ures"></div>
+  </div>
+  <input class="search" id="bq" type="search" placeholder="দাতার নাম খুঁজুন" autocomplete="off" aria-label="দাতা খুঁজুন">
   <div class="chips" id="chips" role="group" aria-label="রক্তের গ্রুপ"></div>
   <div id="blist" class="grid"></div>
 </section>
@@ -347,6 +375,12 @@ const hot=k=>(HITS[k]||0)>=5?'<span class="tag hot">🔥 জনপ্রিয�
 const KINDS={person:{col:"live_people",label:"গ্রামের মানুষ"},donor:{col:"live_donors",label:"রক্তদাতা"},emergency:{col:"live_emergency",label:"জরুরি নম্বর"},notice:{col:"live_notices",label:"নোটিশ"}};
 const BASE_EMG=[];
 const DATA={person:[],donor:[],emergency:[],notice:[]};
+const LOADED={person:0,donor:0,emergency:0,notice:0};
+const SK=n=>Array(n).fill('<div class="sk skrow" aria-hidden="true"></div>').join("");
+const stat=(id,k,v)=>{const e=$(id);e.classList.toggle("sk",!LOADED[k]);e.textContent=LOADED[k]?bn(v):"০০";};
+const dsOf=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
+const CAN={"A+":["A+","A-","O+","O-"],"A-":["A-","O-"],"B+":["B+","B-","O+","O-"],"B-":["B-","O-"],"AB+":["A+","A-","B+","B-","AB+","AB-","O+","O-"],"AB-":["A-","B-","AB-","O-"],"O+":["O+","O-"],"O-":["O-"]};
+let URG_TEXT="";
 let scope="local",photoData="",onlyOk=false,roleF="",HITS={},EDIT=null,editPhoto,cropFor="photo",PENDING=[],db=null,isAdmin=false,me=null,grp="সব";
 const login=()=>"";
 const delBtn=(k,id)=>isAdmin?`<div class="aa"><button class="del ed" data-ed="live|${k}|${id}">সম্পাদনা</button>${k==="donor"?`<button class="del ed" data-gave="${id}">আজ রক্ত দিয়েছেন</button>`:""}<button class="del" data-del="${k}|${id}">মুছুন</button></div>`:"";
@@ -361,11 +395,11 @@ function renderPeople(){
   const l=rankPeople($("q").value);
   const roles=[...DATA.person.filter(p=>!p.outside).reduce((m,p)=>p.role?m.set(p.role,(m.get(p.role)||0)+1):m,new Map())].sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>x[0]);
   $("rchips").innerHTML=roles.length?`<button class="chip" aria-pressed="${!roleF}" data-r="">সব</button>`+roles.map(r=>`<button class="chip" aria-pressed="${roleF===r}" data-r="${esc(r)}">${esc(r)}</button>`).join(""):"";
-  $("plist").innerHTML=l.length?l.map(p=>personRow(p)).join(""):(db?'<div class="empty">কাউকে পাওয়া যায়নি। অন্য নাম লিখে দেখুন।</div>':"");
+  $("plist").innerHTML=!LOADED.person?SK(4):l.length?l.map(p=>personRow(p)).join(""):(db?'<div class="empty">কাউকে পাওয়া যায়নি। অন্য নাম লিখে দেখুন।</div>':"");
 }
 function renderOut(){
   const l=DATA.person.filter(p=>p.outside).sort((a,b)=>(HITS["person_"+b.id]||0)-(HITS["person_"+a.id]||0)||String(a.name).localeCompare(String(b.name),"bn"));
-  $("olist").innerHTML=l.length?l.map(p=>personRow(p,false)).join(""):(db?'<div class="empty">বাইরের গুরুত্বপূর্ণ ব্যক্তির তথ্য শীঘ্রই যোগ হবে।</div>':"");
+  $("olist").innerHTML=!LOADED.person?SK(2):l.length?l.map(p=>personRow(p,false)).join(""):(db?'<div class="empty">বাইরের গুরুত্বপূর্ণ ব্যক্তির তথ্য শীঘ্রই যোগ হবে।</div>':"");
 }
 function renderSug(){
   const q=$("q").value.trim(),box=$("sg");
@@ -375,29 +409,29 @@ function renderSug(){
   box.hidden=!l.length;
 }
 function renderEmg(){
-  $("elist").innerHTML=!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${avatar(e)}<div class="info"><b class="nm">${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${fmtPh(e.phone)}</span>${e.fixed?"":hot("emergency_"+e.id)}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
+  $("elist").innerHTML=!LOADED.emergency?SK(3):!DATA.emergency.length?'<div class="empty">এলাকার জরুরি নম্বর শীঘ্রই যোগ হবে।</div>':[...BASE_EMG.map(e=>({...e,fixed:1})),...[...DATA.emergency].sort((a,b)=>(HITS["emergency_"+b.id]||0)-(HITS["emergency_"+a.id]||0))].map(e=>`<div class="row">${avatar(e)}<div class="info"><b class="nm">${esc(e.name)}</b>${e.note?`<span>${esc(e.note)}</span>`:""}<span class="pn">${PHs}${fmtPh(e.phone)}</span>${e.fixed?"":hot("emergency_"+e.id)}${e.fixed?"":delBtn("emergency",e.id)}</div>${callBtn(e.phone,"",e.fixed?"":"emergency_"+e.id)}</div>`).join("");
 }
 function renderBlood(){
   const G=["সব","A+","A-","B+","B-","O+","O-","AB+","AB-"];
   $("chips").innerHTML=`<button class="chip ok" aria-pressed="${onlyOk}" data-ok="1">✓ এখন দিতে পারবেন</button>`+G.map(g=>`<button class="chip" aria-pressed="${g===grp}" data-g="${g}">${g}</button>`).join("");
   const ds=d=>d.last?Math.floor((Date.now()-new Date(d.last))/864e5):9999;
-  const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+" "+(d.phone||""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
+  const bq=$("bq").value;const l=DATA.donor.filter(d=>grp==="সব"||d.group===grp).filter(d=>mScore(bq,(d.name||"")+" "+(d.group||"")+(isAdmin?" "+(d.phone||""):""))>0).map(d=>({...d,ds:ds(d)})).filter(d=>!onlyOk||d.ds>=90).sort((a,b)=>(b.ds>=90)-(a.ds>=90)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
   const topD=[...DATA.donor].filter(d=>+d.times>0).sort((a,b)=>b.times-a.times).slice(0,3);
   const topS=topD.length?`<div class="topd"><b>🏅 শীর্ষ রক্তদাতা</b>${topD.map((d,i)=>`<span>${["🥇","🥈","🥉"][i]} ${esc(d.name)} (${bn(d.times)} বার)</span>`).join("")}</div>`:"";
-  $("blist").innerHTML=login()+topS+(l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b><span class="pn">${PHs}${fmtPh(d.phone)}</span>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div>${callBtn(d.phone,"red","donor_"+d.id)}<div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
+  $("blist").innerHTML=login()+topS+(!LOADED.donor?SK(4):l.length?l.map(d=>{const ok=d.ds>=90;return `<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b>${isAdmin?`<span class="pn">${PHs}${fmtPh(d.phone)}</span>`:""}${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button><div class="tgs"><span class="tag ${ok?"ok":"wait"}">${ok?"✓ এখন দিতে পারবেন":"৯০ দিন হয়নি · আরও "+bn(90-d.ds)+" দিন পরে"}</span>${timesTag(d)}${hot("donor_"+d.id)}</div>${delBtn("donor",d.id)}</div>`}).join(""):(db?'<div class="empty">এই গ্রুপের কোনো দাতা এখনো নেই।</div>':""))+'<div class="hint" style="margin-top:14px">শেষ রক্তদানের ৯০ দিন পর আবার রক্ত দেওয়া যায়। যারা দিতে পারবেন তারা তালিকার শুরুতে থাকে।</div>';
 }
 const MONTHS=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
 const dt=s=>{const d=new Date(s);return isNaN(d)?"":bn(d.getDate())+" "+MONTHS[d.getMonth()]+" "+bn(d.getFullYear())};
 function renderNotices(){
   const l=[...DATA.notice].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
-  $("nlist").innerHTML=login()+(l.length?l.map(n=>`<article class="note ${n.urgent?"urgent":""}"><h3>${esc(n.title)}</h3><time>${dt(n.date)}${n.urgent?" · জরুরি":""}</time><p>${esc(n.body)}</p>${delBtn("notice",n.id)}</article>`).join(""):(db?'<div class="empty">এখনো কোনো নোটিশ নেই।</div>':""));
+  $("nlist").innerHTML=login()+(!LOADED.notice?SK(2):l.length?l.map(n=>`<article class="note ${n.urgent?"urgent":""}"><h3>${esc(n.title)}</h3><time>${dt(n.date)}${n.urgent?" · জরুরি":""}</time><p>${esc(n.body)}</p>${delBtn("notice",n.id)}</article>`).join(""):(db?'<div class="empty">এখনো কোনো নোটিশ নেই।</div>':""));
 }
 const summary=p=>{const d=p.data;return p.kind==="notice"?d.title:(d.outside?"[বাইরের] ":"")+d.name+" · "+(d.group||d.role||d.note||"")+" · "+fmtPh(d.phone)};
 function renderPending(){
   $("abadge").textContent=PENDING.length?bn(PENDING.length):"";renderDash();
   $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row">${p.data&&p.data.photo?avatar(p.data):""}<div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ed2" data-ed="pending|${p.kind}|${p.id}">সম্পাদনা</button><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
 }
-const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();$("s1").textContent=bn(DATA.person.filter(p=>!p.outside).length);$("s2").textContent=bn(DATA.donor.length);$("s3").textContent=bn(DATA.notice.length)};
+const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();stat("s1","person",DATA.person.filter(p=>!p.outside).length);stat("s2","donor",DATA.donor.length);stat("s3","notice",DATA.notice.length)};
 
 const FIELDS={
  person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label class="chk"><input type="checkbox" name="outside"> এলাকার বাইরের গুরুত্বপূর্ণ ব্যক্তি (ডাক্তার, অফিসার ইত্যাদি)</label><label>কোথায় (প্রতিষ্ঠান/এলাকা)<input name="area" placeholder="যেমন: ময়মনসিংহ মেডিকেল কলেজ"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
@@ -434,6 +468,9 @@ document.addEventListener("click",async e=>{
   else if(b.dataset.gave){try{await db.collection("live_donors").doc(b.dataset.gave).update({last:new Date().toISOString().slice(0,10),times:increment(1)});}catch(x){}}
   else if(b.dataset.sg){const p=DATA.person.find(x=>x.id===b.dataset.sg);if(p){$("q").value=p.name;$("sg").hidden=true;renderPeople();trackHit("person_"+p.id);}}
   else if(b.dataset.r!==undefined){roleF=b.dataset.r;renderPeople();renderSug();}
+  else if(b.dataset.urg){const x=$("urgbox");x.hidden=!x.hidden;}
+  else if(b.dataset.dcall){const d=DATA.donor.find(x=>x.id===b.dataset.dcall);if(d){trackHit("donor_"+d.id);location.href="tel:"+en(d.phone);}}
+  else if(b.dataset.ucopy){try{await navigator.clipboard.writeText(URG_TEXT);b.textContent="✓ কপি হয়েছে";}catch(x){b.textContent="কপি করা যায়নি";}}
   else if(b.dataset.bk){backup();}
   else if(b.id==="erm"){editPhoto="";$("epv").innerHTML="";}
   else if(b.dataset.ok){onlyOk=!onlyOk;renderBlood();}
@@ -451,11 +488,25 @@ $("bq").addEventListener("input",renderBlood);
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.t)));
 document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showSec(b.dataset.go)));
 showFields();renderAll();
+$("urgf").addEventListener("submit",e=>{
+  e.preventDefault();
+  const g=$("ug").value,h=$("uh").value.trim(),ph=en($("up").value),u=parseInt(en($("uu").value))||0,m=$("urm"),box=$("ures");
+  if(!g||h.length<2||!/^01\d{9}$/.test(ph)){m.textContent="গ্রুপ, হাসপাতাল আর ১১ ডিজিটের নম্বর দিন।";box.innerHTML="";return;}
+  m.textContent="";
+  URG_TEXT=`🩸 জরুরি রক্ত দরকার!\nগ্রুপ: ${g}${u?` (${bn(u)} ব্যাগ)`:""}\nহাসপাতাল: ${h}\nযোগাযোগ: ${fmtPh(ph)}\nআরও দাতা: ${location.origin}`;
+  const ok=DATA.donor.filter(d=>CAN[g].includes(d.group)).map(d=>({...d,ds:dsOf(d)})).filter(d=>d.ds>=90)
+    .sort((a,b)=>(b.group===g)-(a.group===g)||(HITS["donor_"+b.id]||0)-(HITS["donor_"+a.id]||0));
+  box.innerHTML=`<div class="hint good">অনুরোধ তৈরি হয়েছে। নিচের বাটনে গ্রামের হোয়াটসঅ্যাপ গ্রুপে পাঠান।</div>
+    <div class="uact"><a class="call" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(URG_TEXT)}">💬 হোয়াটসঅ্যাপে শেয়ার</a><button type="button" class="call" data-ucopy="1">📋 কপি</button></div>
+    <h3>এখন রক্ত দিতে পারবেন এমন দাতা (${bn(ok.length)} জন)</h3>`+
+    (ok.length?`<div class="grid">`+ok.map(d=>`<div class="row dn"><div class="bg">${esc(d.group)}</div><div class="info"><b class="nm">${esc(d.name)}</b>${d.last?`<span class="ls">শেষ দান: ${bn(d.ds)} দিন আগে</span>`:""}</div><button type="button" class="call red" data-dcall="${esc(d.id)}" aria-label="${esc(d.name)} কে কল করুন">${PH}কল</button></div>`).join("")+`</div>`
+     :'<div class="empty">এই মুহূর্তে মিল থাকা দাতা তালিকায় নেই। হোয়াটসঅ্যাপে শেয়ার করুন।</div>');
+});
 let unsubP=null;
 try{
   const app=initializeApp(firebaseConfig),fs=getFirestore(app),auth=getAuth(app);
   db={hit:id=>setDoc(doc(fs,"hits",id),{n:increment(1)},{merge:true}),collection:n=>({onSnapshot:(f,e)=>onSnapshot(collection(fs,n),f,e),add:d=>addDoc(collection(fs,n),d),doc:id=>({delete:()=>deleteDoc(doc(fs,n,id)),update:d=>updateDoc(doc(fs,n,id),d),set:d=>setDoc(doc(fs,n,id),d)})})};
-  Object.entries(KINDS).forEach(([k,v])=>db.collection(v.col).onSnapshot(s=>{DATA[k]=s.docs.map(x=>({id:x.id,...x.data()}));renderAll();},()=>{}));
+  Object.entries(KINDS).forEach(([k,v])=>db.collection(v.col).onSnapshot(s=>{LOADED[k]=1;DATA[k]=s.docs.map(x=>({id:x.id,...x.data()}));renderAll();},()=>{LOADED[k]=1;renderAll();}));
   db.collection("hits").onSnapshot(s=>{HITS={};s.docs.forEach(x=>{HITS[x.id]=x.data().n||0});renderAll();renderSug();},()=>{});
   onAuthStateChanged(auth,u=>{
     isAdmin=!!u;$("admtab").hidden=!u;$("lout").hidden=!u;$("lf").hidden=!!u;
@@ -464,12 +515,12 @@ try{
     renderAll();renderPending();
   });
   $("lf").addEventListener("submit",async e=>{e.preventDefault();$("lmsg").textContent="";
-    try{await signInWithEmailAndPassword(auth,$("lem").value.trim(),$("lpw").value);$("lf").reset();history.replaceState(null,"",location.pathname);document.querySelector('nav button[data-t="add"]').click();}
+    try{await signInWithEmailAndPassword(auth,$("lem").value.trim(),$("lpw").value);$("lf").reset();history.replaceState(null,"",location.pathname.replace(/\/admin\/?$/,"/"));document.querySelector('nav button[data-t="add"]').click();}
     catch(x){$("lmsg").textContent="ইমেইল বা পাসওয়ার্ড ভুল।";}});
   $("lout").addEventListener("click",()=>signOut(auth));
 }catch(e){console.error(e);}
 function showSec(id){document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x.dataset.t===id));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));if(id==="notice")markSeen();requestAnimationFrame(fitNames);const y=document.querySelector("main").getBoundingClientRect().top+scrollY-(innerWidth>=820?64:8);scrollTo({top:Math.max(0,y)});}
-const checkHash=()=>{if(location.hash==="#admin")showSec("login");};
+const checkHash=()=>{if(location.hash==="#admin"||location.pathname.replace(/\/$/,"")==="/admin")showSec("login");};
 addEventListener("hashchange",checkHash);checkHash();
 function renderTicker(){
   const l=[...DATA.notice].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -563,6 +614,7 @@ function fitNames(){document.querySelectorAll(".nm").forEach(el=>{el.style.fontS
 new MutationObserver(()=>requestAnimationFrame(fitNames)).observe(document.querySelector("main"),{childList:true,subtree:true});
 addEventListener("resize",fitNames);if(document.fonts)document.fonts.ready.then(fitNames);
 renderDate();loadWx();
+setTimeout(()=>{Object.keys(LOADED).forEach(k=>LOADED[k]=1);renderAll();},8000);
 </script>
 
 </body>
