@@ -4,10 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>মোল্লাপাড়া ইনফো</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/jpeg;base64,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">
-<link rel="apple-touch-icon" href="data:image/jpeg;base64,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">
+<link rel="icon" href="data:,">
 <meta name="theme-color" content="#14532d">
+<meta name="description" content="আমাদের গ্রামের ফোনবুক, জরুরি নম্বর, রক্তদাতা ও নোটিশ, সব এক জায়গায়।">
+<meta property="og:type" content="website"><meta property="og:locale" content="bn_BD"><meta property="og:site_name" content="মোল্লাপাড়া ইনফো">
+<meta property="og:title" content="মোল্লাপাড়া ইনফো"><meta property="og:description" content="আমাদের গ্রামের ফোনবুক, জরুরি নম্বর, রক্তদাতা ও নোটিশ, সব এক জায়গায়।">
+<meta property="og:url" content="https://mullaparainfo.vercel.app/"><meta property="og:image" content="https://mullaparainfo.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="মোল্লাপাড়া ইনফো, গ্রামের সব নম্বর, এক ফোনেই">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{--bg:#f3f5f1;--card:#fff;--ink:#14231b;--mute:#5a6a60;--line:#dde4dd;--green:#14532d;--green2:#1f7a46;--soft:#e7f1ea;--redbtn:#b3261e;--red:#b3261e;--redbg:#fbe9e7;--ok:#176c3a;--okbg:#e1f3e7;--warn:#7a5200;--warnbg:#fff1cf;--hero:#14532d;--sh:0 1px 2px rgba(20,35,27,.06),0 4px 14px rgba(20,35,27,.05);
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -241,6 +248,27 @@ button.call{border:0;font:inherit;cursor:pointer}
 .call.wa.off{position:relative;background:transparent;color:var(--mute);opacity:.38;box-shadow:inset 0 0 0 1.5px var(--line);pointer-events:none;cursor:default}
 .call.wa.off::after{content:"";position:absolute;left:9px;right:9px;top:50%;border-top:2px solid currentColor;transform:rotate(-38deg)}
 @media (prefers-color-scheme:dark){.call.wa.off{opacity:.5}}
+
+/* === রক্তদাতা কার্ড বানানো === */
+.cmb{background:#1f4e8c;--d:#143862;margin-bottom:12px}
+.cm-back{border:0;background:none;color:var(--green2);font:inherit;font-weight:700;padding:6px 0;cursor:pointer}
+.cm-sub{margin:0 0 12px;color:var(--mute,#5a6a60)}
+.cm-pv,.cm-box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;max-width:560px;box-shadow:var(--sh)}
+.cm-box{margin-top:14px;display:grid;gap:12px;padding:16px}
+.cm-pv canvas{width:100%;height:auto;display:block;border-radius:12px}
+.cm-box label{display:grid;gap:4px;font-weight:600}.cm-box label small{font-weight:400;opacity:.75}
+.cm-box input,.cm-box select{font:inherit;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);min-height:46px;width:100%}
+.cm-box input[type=range]{padding:0;min-height:30px}
+.cm-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cm-th{display:flex;gap:10px}.cm-th button{flex:1;min-height:48px;border-radius:12px;border:2.5px solid transparent;font:inherit;font-weight:700;color:#fff;cursor:pointer}
+.cm-th button[aria-pressed="true"]{border-color:var(--ink)}
+.cm-go{min-height:52px;border:0;border-radius:14px;background:var(--redbtn);color:#fff;font:inherit;font-weight:700;font-size:1.08rem;cursor:pointer}.cm-go.alt{background:var(--green2)}
+#cm_out{display:none;gap:10px}#cm_out img{width:100%;border-radius:12px;display:block}
+
+/* === নোটিফিকেশন === */
+.pushbox{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:14px;box-shadow:var(--sh)}
+.pushbox[hidden]{display:none}.pushbox b{display:block}.pushbox span{font-size:.92rem;color:var(--mute)}
+.pushbox .send{width:auto;max-width:none;padding:10px 18px;flex:none}.pushbox .send[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -282,6 +310,7 @@ button.call{border:0;font:inherit;cursor:pointer}
 <section id="blood">
   <h2>স্মার্ট ব্লাড ব্যাংক</h2>
   <button type="button" class="send urgb" data-urg="1">🆘 জরুরি রক্ত চাই</button>
+  <button type="button" class="send cmb" data-cardopen="1">🪪 আমার রক্তদাতা কার্ড বানান</button>
   <div id="urgbox" hidden>
     <form id="urgf" novalidate>
       <label>রক্তের গ্রুপ * (বেছে নিলেই দাতার তালিকা আসবে)<select id="ug"><option value="">বেছে নিন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label>
@@ -300,6 +329,7 @@ button.call{border:0;font:inherit;cursor:pointer}
 
 <section id="notice">
   <h2>নোটিশ বোর্ড</h2>
+  <div id="pushbox" class="pushbox" hidden><div><b>🔔 নোটিফিকেশন</b><span id="pushst"></span></div><button type="button" id="pushbtn" class="send">চালু করুন</button></div>
   <div id="nlist" class="grid"></div>
 </section>
 <section id="add">
@@ -311,6 +341,25 @@ button.call{border:0;font:inherit;cursor:pointer}
     <div id="msg" class="hint" role="status"></div>
     <button class="send" type="submit">জমা দিন</button>
   </form>
+</section>
+<section id="cardmk">
+  <button type="button" class="cm-back" data-cardback="1">← ফিরে যান</button>
+  <h2>🪪 আমার রক্তদাতা কার্ড</h2>
+  <p class="cm-sub">নিজের ছবি, নাম আর গ্রুপ দিন। কার্ড আপনার ফোনেই তৈরি হবে।</p>
+  <div class="cm-pv"><canvas id="cm_cv" role="img" aria-label="রক্তদাতা কার্ডের প্রিভিউ"></canvas></div>
+  <div class="cm-box">
+    <label>আপনার ছবি <small>ছবি ফোন থেকে বাইরে যায় না, শুধু কার্ডে বসে।</small><input id="cm_ph" type="file" accept="image/*"></label>
+    <div id="cm_adj" style="display:none;gap:8px"><label>জুম<input id="cm_z" type="range" min="1" max="3" step=".02" value="1"></label>
+    <div class="cm-2"><label>ডানে-বামে<input id="cm_ox" type="range" min="-250" max="250" value="0"></label><label>উপর-নিচে<input id="cm_oy" type="range" min="-250" max="250" value="0"></label></div></div>
+    <label>নাম<input id="cm_nm" maxlength="40" placeholder="আপনার নাম"></label>
+    <div class="cm-2"><label>রক্তের গ্রুপ<select id="cm_g"><option>O+</option><option>A+</option><option>B+</option><option>AB+</option><option>O-</option><option>A-</option><option>B-</option><option>AB-</option></select></label>
+    <label>কতবার দিয়েছেন<input id="cm_tm" type="number" inputmode="numeric" min="0" max="99" value="1"></label></div>
+    <label>শেষ রক্তদানের মাস <small>না দিলে ফাঁকা থাকবে</small><input id="cm_ls" type="month"></label>
+    <div><div style="font-weight:600;margin-bottom:6px">কার্ডের রঙ</div><div class="cm-th" id="cm_th"></div></div>
+  </div>
+  <div class="cm-box"><button class="cm-go" id="cm_mk" type="button">কার্ড তৈরি করুন</button>
+    <div id="cm_out"><img id="cm_oi" alt="আপনার রক্তদাতা কার্ড"><button class="cm-go alt" id="cm_sh" type="button">শেয়ার করুন</button><button class="cm-go alt" id="cm_dl" type="button">ছবি সেভ করুন</button></div></div>
+  <p class="cm-sub" style="margin-top:12px">এই কার্ডে ফোন নম্বর থাকে না। নাম আর ছবি শুধু আপনার নিজের ইচ্ছায় কার্ডে বসে।</p>
 </section>
 <section id="adm"><div id="dash"></div><h2>অনুমোদনের অপেক্ষায়</h2><div id="alist" class="grid"></div></section>
 <section id="login"><h2>অ্যাডমিন লগইন</h2>
@@ -334,12 +383,13 @@ button.call{border:0;font:inherit;cursor:pointer}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getFirestore,collection,doc,addDoc,deleteDoc,onSnapshot,setDoc,updateDoc,increment} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+;
 const firebaseConfig={
   apiKey:"AIzaSyDxjJ6GauVfCXEc5ufG_jWIeYVUOje_-Cg",
   authDomain:"mullapara2026.firebaseapp.com",
   projectId:"mullapara2026",
-  appId:"1:263885598083:web:4bd8f00d148bbb73341ab6"
+  appId:"1:263885598083:web:4bd8f00d148bbb73341ab6",
+  messagingSenderId:"263885598083"
 };
 /* =============================================================== */
 const bn=s=>String(s).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
@@ -442,7 +492,8 @@ function renderPending(){
   $("abadge").textContent=PENDING.length?bn(PENDING.length):"";renderDash();
   $("alist").innerHTML=PENDING.length?PENDING.map(p=>`<div class="row">${p.data&&p.data.photo?avatar(p.data):""}<div class="info"><b>${esc(KINDS[p.kind].label)}</b><span>${esc(summary(p))}</span>${p.kind==="notice"?`<span>${esc(p.data.body)}</span>`:""}</div><div class="acts"><button class="ed2" data-ed="pending|${p.kind}|${p.id}">সম্পাদনা</button><button class="ok" data-ap="${p.id}">অনুমোদন</button><button class="no" data-rj="${p.id}">বাতিল</button></div></div>`).join(""):'<div class="empty">অপেক্ষায় কোনো অনুরোধ নেই।</div>';
 }
-const renderAll=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();renderUrg();stat("s1","person",DATA.person.filter(p=>!p.outside).length);stat("s2","donor",DATA.donor.length);stat("s3","notice",DATA.notice.length)};
+let _rq=0;const renderAll=()=>{if(_rq)return;_rq=requestAnimationFrame(()=>{_rq=0;renderAllNow()})};
+const renderAllNow=()=>{renderTicker();renderDash();updateBell();renderPeople();renderOut();renderEmg();renderBlood();renderNotices();renderUrg();stat("s1","person",DATA.person.filter(p=>!p.outside).length);stat("s2","donor",DATA.donor.length);stat("s3","notice",DATA.notice.length)};
 
 const FIELDS={
  person:'<label>নাম *<input name="name" required></label><label>পেশা<input name="role"></label><label class="chk"><input type="checkbox" name="outside"> এলাকার বাইরের গুরুত্বপূর্ণ ব্যক্তি (ডাক্তার, অফিসার ইত্যাদি)</label><label>কোথায় (প্রতিষ্ঠান/এলাকা)<input name="area" placeholder="যেমন: ময়মনসিংহ মেডিকেল কলেজ"></label><label>ফোন নম্বর *<input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label><label>ছবি (ঐচ্ছিক, নিজে কেটে ঠিক করতে পারবেন)<input type="file" id="photo" accept="image/*"></label><div id="pv" class="pv"></div>',
@@ -523,22 +574,110 @@ $("urgf").addEventListener("submit",e=>{
   m.textContent="";
   sh.innerHTML=`<div class="hint good">মেসেজ তৈরি হয়েছে। গ্রামের হোয়াটসঅ্যাপ গ্রুপে পাঠান, অথবা নিচের দাতাদের সরাসরি হোয়াটসঅ্যাপ করুন।</div><div class="uact"><a class="call" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(urgText())}">${WAI} গ্রুপে শেয়ার</a><button type="button" class="call" data-ucopy="1">📋 কপি</button></div>`;
 });
+(function(){
+
+const W=1080,H=1350,cv=document.getElementById('cm_cv'),c=cv.getContext('2d');cv.width=W;cv.height=H;
+const $=id=>document.getElementById('cm_'+id),bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const F=getComputedStyle(document.body).fontFamily,MON=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+const TO={'O-':['O-','O+','A-','A+','B-','B+','AB-','AB+'],'O+':['O+','A+','B+','AB+'],'A-':['A-','A+','AB-','AB+'],'A+':['A+','AB+'],'B-':['B-','B+','AB-','AB+'],'B+':['B+','AB+'],'AB-':['AB-','AB+'],'AB+':['AB+']};
+const TH=[{n:'ক্রিমসন',bg:'#9f1239',dk:'#0f2742',ac:'#c81e4a',so:'#fde8ee'},{n:'নেভি',bg:'#0f2742',dk:'#0f2742',ac:'#1d6fb8',so:'#e6f0fa'},{n:'পান্না',bg:'#0b5d4b',dk:'#12332b',ac:'#0b8f6d',so:'#e3f4ee'}];
+const S={th:0,img:null},LOGO=new Image();let inited=false;LOGO.onload=()=>{if(inited)draw()};LOGO.src=document.querySelector('.logo img').src;
+const DROP=new Path2D('M12 3s6.5 6.6 6.5 11A6.5 6.5 0 015.5 14C5.5 9.6 12 3 12 3z'),STAR=new Path2D('M12 2l3 6.5 7 .9-5.1 4.8 1.3 7-6.2-3.5-6.2 3.5 1.3-7L2 9.4l7-.9z');
+function rr(x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function tx(t,x,y,sz,col,al='center',wt=700){c.font=wt+' '+sz+'px '+F;c.fillStyle=col;c.textAlign=al;c.textBaseline='middle';c.fillText(t,x,y)}
+const mw=(t,sz,wt=700)=>{c.font=wt+' '+sz+'px '+F;return c.measureText(t).width};
+const fit=(t,sz,max,wt=700)=>{while(mw(t,sz,wt)>max&&sz>20)sz-=2;return sz};
+function draw(){
+const T=TH[S.th],name=$('nm').value.trim(),g=$('g').value,times=Math.max(0,parseInt($('tm').value)||0),lv=$('ls').value;
+let last='—',nxt='—';if(lv){const[y,m]=lv.split('-').map(Number);last=MON[m-1]+' '+bn(y);const n=new Date(y,m-1+3,1);nxt=MON[n.getMonth()]+' '+bn(n.getFullYear())}
+c.clearRect(0,0,W,H);c.fillStyle='#f6f7f9';c.fillRect(0,0,W,H);
+c.fillStyle=T.bg;c.beginPath();c.moveTo(0,0);c.lineTo(W,0);c.lineTo(W,236);c.lineTo(0,330);c.closePath();c.fill();
+c.save();c.clip();c.strokeStyle='rgba(255,255,255,.13)';c.lineWidth=2;[120,190,260,330,400].forEach(r=>{c.beginPath();c.arc(940,30,r,0,7);c.stroke()});c.restore();
+rr(64,46,84,84,22);c.fillStyle='#fff';c.fill();if(LOGO.complete&&LOGO.naturalWidth){c.save();rr(69,51,74,74,18);c.clip();c.drawImage(LOGO,69,51,74,74);c.restore()}
+tx('মোল্লাপাড়া ইনফো',164,88,40,'#fff','left');tx('স্বেচ্ছায় রক্তদাতা কার্ড',W-64,160,28,'rgba(255,255,255,.88)','right',500);
+c.save();c.shadowColor='rgba(15,39,66,.28)';c.shadowBlur=34;c.shadowOffsetY=14;c.beginPath();c.arc(540,340,206,0,7);c.fillStyle='#fff';c.fill();c.restore();
+c.save();c.beginPath();c.arc(540,340,188,0,7);c.clip();
+if(S.img){const z=parseFloat($('z').value),k=Math.max(376/S.img.width,376/S.img.height)*z,w=S.img.width*k,h=S.img.height*k;c.drawImage(S.img,540-w/2+(+$('ox').value),340-h/2+(+$('oy').value),w,h)}
+else{c.fillStyle=T.so;c.fillRect(340,140,400,400);c.fillStyle='rgba(15,39,66,.2)';c.beginPath();c.arc(540,300,64,0,7);c.fill();c.beginPath();c.ellipse(540,486,136,104,0,0,7);c.fill();tx('ছবি দিন',540,420,30,'rgba(15,39,66,.6)','center',500)}
+c.restore();c.beginPath();c.arc(540,340,198,0,7);c.strokeStyle=T.ac;c.lineWidth=6;c.stroke();
+c.beginPath();c.arc(748,510,88,0,7);c.fillStyle='#fff';c.fill();c.beginPath();c.arc(748,510,76,0,7);c.fillStyle='#d7263d';c.fill();tx('গ্রুপ',748,484,22,'rgba(255,255,255,.9)','center',500);tx(g,748,526,52,'#fff');
+if(times>=4){c.beginPath();c.arc(332,510,88,0,7);c.fillStyle='#fff';c.fill();c.beginPath();c.arc(332,510,76,0,7);c.fillStyle='#f2b705';c.fill();c.save();c.translate(314,462);c.scale(1.5,1.5);c.fillStyle='#14231b';c.fill(STAR);c.restore();tx('রক্ত সৈনিক',332,534,22,'#14231b')}
+const ns=fit(name||'আপনার নাম',90,900);tx(name||'আপনার নাম',540,670,ns,name?T.dk:'#a3adb7');
+const rl='স্বেচ্ছায় রক্তদাতা',rw=mw(rl,30);tx(rl,540,744,30,T.ac);c.strokeStyle=T.ac;c.lineWidth=3;c.beginPath();c.moveTo(540-rw/2-130,744);c.lineTo(540-rw/2-26,744);c.moveTo(540+rw/2+26,744);c.lineTo(540+rw/2+130,744);c.stroke();
+c.save();c.shadowColor='rgba(15,39,66,.12)';c.shadowBlur=24;c.shadowOffsetY=8;rr(64,790,952,170,28);c.fillStyle='#fff';c.fill();c.restore();
+[['মোট রক্তদান',times?bn(times)+' বার':'—'],['শেষ রক্তদান',last],['পরবর্তী দান',nxt]].forEach(([l,v],i)=>{const cx=64+317.3*(i+.5);tx(l,cx,832,26,'#6b7785','center',500);tx(v,cx,890,fit(v,48,282),T.dk);if(i<2){c.strokeStyle='#dfe4ea';c.lineWidth=2;c.beginPath();c.moveTo(64+317.3*(i+1),815);c.lineTo(64+317.3*(i+1),935);c.stroke()}});
+rr(64,990,952,84,24);c.fillStyle=T.so;c.fill();c.save();c.translate(96,990+14-3*3.2);c.scale(3.2,3.2);c.fillStyle=T.ac;c.fill(DROP);c.restore();
+const bt=times?'আমার রক্তে '+bn(times*3)+' জন পর্যন্ত রোগীর উপকার হতে পারে':'একবার রক্তে ৩ জন পর্যন্ত রোগীর উপকার হতে পারে';tx(bt,168,1034,fit(bt,32,812,600),T.dk,'left',600);
+tx('যাদের রক্ত দিতে পারি',64,1112,28,'#6b7785','left',500);let cx=64;TO[g].forEach(x=>{const w=Math.max(96,mw(x,32)+40);rr(cx,1136,w,56,28);if(x===g){c.fillStyle=T.ac;c.fill();tx(x,cx+w/2,1166,32,'#fff')}else{c.fillStyle='#fff';c.fill();c.strokeStyle='#cfd6de';c.lineWidth=2;c.stroke();tx(x,cx+w/2,1166,32,T.dk)}cx+=w+12});
+c.fillStyle=T.dk;c.fillRect(0,1236,W,114);tx('রক্ত দিন, জীবন বাঁচান',64,1278,36,'#fff','left');tx('জরুরি রক্ত লাগলে খুঁজুন',64,1320,26,'rgba(255,255,255,.72)','left',400);
+const uw=mw('mullaparainfo.vercel.app',32)+56;rr(W-64-uw,1262,uw,62,31);c.fillStyle='#fff';c.fill();tx('mullaparainfo.vercel.app',W-64-uw/2,1294,32,T.dk)}
+const tb=$('th');TH.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.textContent=t.n;b.style.background=t.bg;b.setAttribute('aria-pressed',i===0);b.onclick=()=>{S.th=i;[...tb.children].forEach((x,j)=>x.setAttribute('aria-pressed',j===i));draw()};tb.appendChild(b)});
+$('ph').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{S.img=im;$('adj').style.display='grid';$('z').value=1;$('ox').value=0;$('oy').value=0;draw()};im.src=r.result};r.readAsDataURL(f)};
+['nm','g','tm','ls','z','ox','oy'].forEach(i=>$(i).addEventListener('input',draw));
+$('mk').onclick=()=>{draw();$('oi').src=cv.toDataURL('image/png');$('out').style.display='grid';$('out').scrollIntoView({behavior:'smooth',block:'nearest'})};
+$('dl').onclick=()=>{cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='rokto-data-card.png';document.body.appendChild(a);a.click();a.remove()})};
+$('sh').onclick=()=>{cv.toBlob(async b=>{const f=new File([b],'rokto-data-card.png',{type:'image/png'});try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:'আমি রক্তদাতা। মোল্লাপাড়া ইনফো'});else await navigator.share({text:'আমি রক্তদাতা। রক্ত লাগলে খুঁজুন: https://mullaparainfo.vercel.app'})}catch(e){}})};
+window.__cmInit=()=>{if(inited)return;inited=true;draw();if(document.fonts&&document.fonts.load){Promise.all(['700 40px','500 28px','400 28px'].map(f=>document.fonts.load(f+' "Noto Sans Bengali"'))).then(draw).catch(()=>{})}};
+
+})();
+document.addEventListener('click',e=>{const o=e.target.closest('[data-cardopen]');if(o){showSec('cardmk');if(window.__cmInit)__cmInit();return}if(e.target.closest('[data-cardback]'))showSec('blood')});
+/* অ্যাপের মতো ইনস্টল: ম্যানিফেস্ট ও আইকন লোগো থেকে নিজে তৈরি হয়, আলাদা ফাইল লাগে না */
+(function(){try{const img=document.querySelector(".logo img");if(!img)return;
+ const mk=()=>{const icons=[192,512].map(n=>{const c=document.createElement("canvas");c.width=c.height=n;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,n,n);const k=n*.82;x.drawImage(img,(n-k)/2,(n-k)/2,k,k);return{src:c.toDataURL("image/png"),sizes:n+"x"+n,type:"image/png",purpose:"any"}});
+  const m={name:"মোল্লাপাড়া ইনফো",short_name:"মোল্লাপাড়া",description:"আমাদের গ্রামের ফোনবুক, জরুরি নম্বর, রক্তদাতা ও নোটিশ",id:"/",start_url:location.origin+"/",scope:location.origin+"/",display:"standalone",lang:"bn",background_color:"#f3f5f1",theme_color:"#14532d",icons};
+  const l=document.createElement("link");l.rel="manifest";l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:"application/manifest+json"}));document.head.appendChild(l)};
+ const go=()=>{img.complete&&img.naturalWidth?mk():img.addEventListener("load",mk)};window.requestIdleCallback?requestIdleCallback(go,{timeout:5000}):setTimeout(go,3000)}catch(e){}})();
+(function(){const i=document.querySelector(".logo img");if(!i)return;const f=document.querySelector("link[rel=icon]");if(f)f.href=i.src;const a=document.createElement("link");a.rel="apple-touch-icon";a.href=i.src;document.head.appendChild(a)})();
 let unsubP=null;
 try{
-  const app=initializeApp(firebaseConfig),fs=getFirestore(app),auth=getAuth(app);
+  const app=initializeApp(firebaseConfig),fs=getFirestore(app);
   db={hit:id=>setDoc(doc(fs,"hits",id),{n:increment(1)},{merge:true}),collection:n=>({onSnapshot:(f,e)=>onSnapshot(collection(fs,n),f,e),add:d=>addDoc(collection(fs,n),d),doc:id=>({delete:()=>deleteDoc(doc(fs,n,id)),update:d=>updateDoc(doc(fs,n,id),d),set:d=>setDoc(doc(fs,n,id),d)})})};
+
+  /* ===== পুশ নোটিফিকেশন (ফ্রি) ===== */
+  const VAPID_KEY=""; /* ← Firebase Console → Project settings → Cloud Messaging → Web Push certificates → Generate key pair, তার Key এখানে বসান */
+  const MSG_URL="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+  function pushUi(err){
+    const box=$("pushbox");if(!VAPID_KEY){box.hidden=true;return}
+    box.hidden=false;const st=$("pushst"),bt=$("pushbtn");let on=false;try{on=localStorage.getItem("mi_push")==="1"}catch(e){}
+    bt.hidden=false;delete bt.dataset.on;
+    if(!("Notification" in window)||!("serviceWorker" in navigator)||!("PushManager" in window)){st.textContent="এই ফোনে সরাসরি সম্ভব নয়। আইফোনে আগে Share থেকে Add to Home Screen দিন।";bt.hidden=true}
+    else if(Notification.permission==="denied"){st.textContent="অনুমতি বন্ধ আছে। ব্রাউজারের সেটিং থেকে চালু করুন।";bt.hidden=true}
+    else if(on&&Notification.permission==="granted"){st.textContent="✓ চালু আছে";bt.textContent="বন্ধ করুন";bt.dataset.on="1"}
+    else{st.textContent=err||"নতুন নোটিশ আর জরুরি রক্তের খবর ফোনে পান";bt.textContent="চালু করুন"}
+  }
+  async function pushOn(ask){
+    const m=await import(MSG_URL);if(!(await m.isSupported()))throw new Error("unsupported");
+    const reg=await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    if(ask&&Notification.permission!=="granted"){if(await Notification.requestPermission()!=="granted")throw new Error("denied")}
+    if(Notification.permission!=="granted")return;
+    const ms=m.getMessaging(app),t=await m.getToken(ms,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+    if(t){try{await db.collection("pushTokens").doc(t).set({at:Date.now()})}catch(e){}try{localStorage.setItem("mi_push","1")}catch(e){}}
+    m.onMessage(ms,p=>{const n=p.notification||{};reg.showNotification(n.title||"মোল্লাপাড়া ইনফো",{body:n.body||"",icon:document.querySelector(".logo img").src})});
+  }
+  async function pushOff(){
+    const m=await import(MSG_URL);await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    await m.deleteToken(m.getMessaging(app));try{localStorage.removeItem("mi_push")}catch(e){}
+  }
+  $("pushbtn").addEventListener("click",async()=>{
+    const bt=$("pushbtn");bt.disabled=true;
+    try{if(bt.dataset.on)await pushOff();else await pushOn(true);pushUi()}
+    catch(e){pushUi(e&&e.message==="denied"?"অনুমতি দেওয়া হয়নি।":"এখন চালু করা গেল না, পরে চেষ্টা করুন।")}
+    bt.disabled=false;
+  });
+  pushUi();
+  try{if(VAPID_KEY&&localStorage.getItem("mi_push")==="1"&&"Notification" in window&&Notification.permission==="granted")pushOn(false).catch(()=>{})}catch(e){}
   Object.entries(KINDS).forEach(([k,v])=>db.collection(v.col).onSnapshot(s=>{LOADED[k]=1;DATA[k]=s.docs.map(x=>({id:x.id,...x.data()}));renderAll();},()=>{LOADED[k]=1;renderAll();}));
   db.collection("hits").onSnapshot(s=>{HITS={};s.docs.forEach(x=>{HITS[x.id]=x.data().n||0});renderAll();renderSug();},()=>{});
-  onAuthStateChanged(auth,u=>{
+  const authReady=import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js").then(A=>{const auth=A.getAuth(app);A.onAuthStateChanged(auth,u=>{
     isAdmin=!!u;$("admtab").hidden=!u;$("lout").hidden=!u;$("lf").hidden=!!u;
     if(unsubP){unsubP();unsubP=null;} PENDING=[];
     if(u)unsubP=db.collection("pending").onSnapshot(s=>{PENDING=s.docs.map(x=>({id:x.id,...x.data()}));renderPending();},()=>{});
     renderAll();renderPending();
-  });
+  });return{A,auth}});
   $("lf").addEventListener("submit",async e=>{e.preventDefault();$("lmsg").textContent="";
-    try{await signInWithEmailAndPassword(auth,$("lem").value.trim(),$("lpw").value);$("lf").reset();history.replaceState(null,"",location.pathname.replace(/\/admin\/?$/,"/"));document.querySelector('nav button[data-t="add"]').click();}
+    try{const{A,auth}=await authReady;await A.signInWithEmailAndPassword(auth,$("lem").value.trim(),$("lpw").value);$("lf").reset();history.replaceState(null,"",location.pathname.replace(/\/admin\/?$/,"/"));document.querySelector('nav button[data-t="add"]').click();}
     catch(x){$("lmsg").textContent="ইমেইল বা পাসওয়ার্ড ভুল।";}});
-  $("lout").addEventListener("click",()=>signOut(auth));
+  $("lout").addEventListener("click",async()=>{const{A,auth}=await authReady;A.signOut(auth)});
 }catch(e){console.error(e);}
 function showSec(id){document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x.dataset.t===id));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));if(id==="notice")markSeen();requestAnimationFrame(fitNames);const y=document.querySelector("main").getBoundingClientRect().top+scrollY-(innerWidth>=820?64:8);scrollTo({top:Math.max(0,y)});}
 const checkHash=()=>{if(location.hash==="#admin"||location.pathname.replace(/\/$/,"")==="/admin")showSec("login");};
